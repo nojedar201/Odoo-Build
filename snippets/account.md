@@ -295,6 +295,34 @@ ID: `mint_system.account.report_invoice_document.add_salesperson`
 ```
 Source: [snippets/account.report_invoice_document.add_salesperson.xml](https://github.com/Mint-System/Odoo-Build/tree/14.0/snippets/account.report_invoice_document.add_salesperson.xml)
 
+### Add Taxes  
+ID: `mint_system.account.report_invoice_document.add_taxes`  
+```xml
+<?xml version="1.0"?>
+<data inherit_id="account.report_invoice_document" priority="60">
+
+	<xpath expr="//div[hasclass('page')]" position="before">
+		<style>
+		.o_company_1_layout {
+        	font-family: Dobra-Book;
+        	font-size: 80%;
+        	}
+    .mb-4 {
+          margin-bottom: 0rem !important;
+          }
+    #total {
+          margin-bottom: 2rem;
+          }
+    h2 {
+       		font-size: 1.5rem;
+      		}
+		</style>
+	</xpath>
+
+</data>
+```
+Source: [snippets/account.report_invoice_document.add_taxes.xml](https://github.com/Mint-System/Odoo-Build/tree/14.0/snippets/account.report_invoice_document.add_taxes.xml)
+
 ### Align Taxes  
 ID: `mint_system.account.report_invoice_document.align_taxes`  
 ```xml
@@ -2311,6 +2339,48 @@ ID: `mint_system.account.report_invoice_document.style_carbo_link`
 </data>
 ```
 Source: [snippets/account.report_invoice_document.style_carbo_link.xml](https://github.com/Mint-System/Odoo-Build/tree/14.0/snippets/account.report_invoice_document.style_carbo_link.xml)
+
+### Style Moser  
+ID: `mint_system.account.report_invoice_document.style_moser`  
+```xml
+<data inherit_id="account.report_invoice_document" priority="60">
+
+	<xpath expr="//div[hasclass('page')]" position="before">
+		<style>
+		.o_company_1_layout {
+        	font-family: arial;
+     	}
+		.o_company_1_layout.o_report_layout_standard h2 {
+        	color: black;
+       		font-size: 1.4rem;
+			    font-weight: bold;
+     	}
+     	.o_company_1_layout.o_report_layout_standard #total strong {
+        	color: black;
+     	}
+     	div#informations {
+     	 	margin-top: 30px;
+     	 	margin-bottom: 60px;
+     	}
+     	h2.mt-4 {
+     	 	margin-top: 70px !important;
+     	}
+     	th#tax_amount {
+     	 	text-align: right;
+     	}
+     	td#tax_amount {
+     	 	text-align: right;
+     	}
+		</style>
+	</xpath>
+	
+	<xpath expr="//table[@name='invoice_line_table']" position="attributes">
+		<attribute name="class">table table-sm o_main_table mt-4</attribute>
+	</xpath>
+	
+</data>
+```
+Source: [snippets/account.report_invoice_document.style_moser.xml](https://github.com/Mint-System/Odoo-Build/tree/14.0/snippets/account.report_invoice_document.style_moser.xml)
 
 ### Style Tissa  
 ID: `mint_system.account.report_invoice_document.style_tissa`  
@@ -2948,6 +3018,34 @@ ID: `mint_system.account.report_invoice_document.add_salesperson`
 ```
 Source: [snippets/account.report_invoice_document.add_salesperson.xml](https://github.com/Mint-System/Odoo-Build/tree/14.0/snippets/account.report_invoice_document.add_salesperson.xml)
 
+### Add Taxes  
+ID: `mint_system.account.report_invoice_document.add_taxes`  
+```xml
+<?xml version="1.0"?>
+<data inherit_id="account.report_invoice_document" priority="60">
+
+	<xpath expr="//div[hasclass('page')]" position="before">
+		<style>
+		.o_company_1_layout {
+        	font-family: Dobra-Book;
+        	font-size: 80%;
+        	}
+    .mb-4 {
+          margin-bottom: 0rem !important;
+          }
+    #total {
+          margin-bottom: 2rem;
+          }
+    h2 {
+       		font-size: 1.5rem;
+      		}
+		</style>
+	</xpath>
+
+</data>
+```
+Source: [snippets/account.report_invoice_document.add_taxes.xml](https://github.com/Mint-System/Odoo-Build/tree/14.0/snippets/account.report_invoice_document.add_taxes.xml)
+
 ### Align Taxes  
 ID: `mint_system.account.report_invoice_document.align_taxes`  
 ```xml
@@ -4965,6 +5063,48 @@ ID: `mint_system.account.report_invoice_document.style_carbo_link`
 ```
 Source: [snippets/account.report_invoice_document.style_carbo_link.xml](https://github.com/Mint-System/Odoo-Build/tree/14.0/snippets/account.report_invoice_document.style_carbo_link.xml)
 
+### Style Moser  
+ID: `mint_system.account.report_invoice_document.style_moser`  
+```xml
+<data inherit_id="account.report_invoice_document" priority="60">
+
+	<xpath expr="//div[hasclass('page')]" position="before">
+		<style>
+		.o_company_1_layout {
+        	font-family: arial;
+     	}
+		.o_company_1_layout.o_report_layout_standard h2 {
+        	color: black;
+       		font-size: 1.4rem;
+			    font-weight: bold;
+     	}
+     	.o_company_1_layout.o_report_layout_standard #total strong {
+        	color: black;
+     	}
+     	div#informations {
+     	 	margin-top: 30px;
+     	 	margin-bottom: 60px;
+     	}
+     	h2.mt-4 {
+     	 	margin-top: 70px !important;
+     	}
+     	th#tax_amount {
+     	 	text-align: right;
+     	}
+     	td#tax_amount {
+     	 	text-align: right;
+     	}
+		</style>
+	</xpath>
+	
+	<xpath expr="//table[@name='invoice_line_table']" position="attributes">
+		<attribute name="class">table table-sm o_main_table mt-4</attribute>
+	</xpath>
+	
+</data>
+```
+Source: [snippets/account.report_invoice_document.style_moser.xml](https://github.com/Mint-System/Odoo-Build/tree/14.0/snippets/account.report_invoice_document.style_moser.xml)
+
 ### Style Tissa  
 ID: `mint_system.account.report_invoice_document.style_tissa`  
 ```xml
@@ -5504,6 +5644,20 @@ ID: `mint_system.account.view_in_invoice_tree.add_discount_date`
 ```
 Source: [snippets/account.view_in_invoice_tree.add_discount_date.xml](https://github.com/Mint-System/Odoo-Build/tree/14.0/snippets/account.view_in_invoice_tree.add_discount_date.xml)
 
+### Format Invoice Date Due  
+ID: `mint_system.account.view_in_invoice_tree.format_invoice_date_due`  
+```xml
+<?xml version="1.0"?>
+<data inherit_id="account.view_in_invoice_tree" priority="50">
+
+    <xpath expr="//field[@name='invoice_date_due']" position="attributes">
+        <attribute name="widget">date</attribute>
+    </xpath>
+
+</data>
+```
+Source: [snippets/account.view_in_invoice_tree.format_invoice_date_due.xml](https://github.com/Mint-System/Odoo-Build/tree/14.0/snippets/account.view_in_invoice_tree.format_invoice_date_due.xml)
+
 ## View Invoice Tree  
 ### Add Currency Id  
 ID: `mint_system.account.view_invoice_tree.add_currency_id`  
@@ -5518,6 +5672,20 @@ ID: `mint_system.account.view_invoice_tree.add_currency_id`
 </data>
 ```
 Source: [snippets/account.view_invoice_tree.add_currency_id.xml](https://github.com/Mint-System/Odoo-Build/tree/14.0/snippets/account.view_invoice_tree.add_currency_id.xml)
+
+### Format Ref  
+ID: `mint_system.account.view_invoice_tree.format_ref`  
+```xml
+<?xml version="1.0"?>
+<data inherit_id="account.view_invoice_tree" priority="50">
+
+    <xpath expr="//field[@name='ref']" position="attributes">
+        <attribute name="string">Bestellnummer Kunde</attribute>        
+    </xpath>
+
+</data>
+```
+Source: [snippets/account.view_invoice_tree.format_ref.xml](https://github.com/Mint-System/Odoo-Build/tree/14.0/snippets/account.view_invoice_tree.format_ref.xml)
 
 ### Show Date  
 ID: `mint_system.account.view_invoice_tree.show_date`  
@@ -5590,6 +5758,20 @@ ID: `mint_system.account.view_move_form.edit_invoice_date`
 ```
 Source: [snippets/account.view_move_form.edit_invoice_date.xml](https://github.com/Mint-System/Odoo-Build/tree/14.0/snippets/account.view_move_form.edit_invoice_date.xml)
 
+### Format Partner Bank Id  
+ID: `mint_system.account.view_move_form.format_partner_bank_id`  
+```xml
+<?xml version="1.0"?>
+<data inherit_id="account.view_move_form" priority="50">
+
+    <xpath expr="//group[@name='sale_info_group']/field[@name='partner_bank_id']" position="attributes">
+        <attribute name="readonly">1</attribute>
+    </xpath>
+
+</data>
+```
+Source: [snippets/account.view_move_form.format_partner_bank_id.xml](https://github.com/Mint-System/Odoo-Build/tree/14.0/snippets/account.view_move_form.format_partner_bank_id.xml)
+
 ### Hide Payment Reference  
 ID: `mint_system.account.view_move_form.hide_payment_reference`  
 ```xml
@@ -5621,6 +5803,39 @@ ID: `mint_system.account.view_move_form.hide_send_button_on_refund`
 </data>
 ```
 Source: [snippets/account.view_move_form.hide_send_button_on_refund.xml](https://github.com/Mint-System/Odoo-Build/tree/14.0/snippets/account.view_move_form.hide_send_button_on_refund.xml)
+
+### Move Ref  
+ID: `mint_system.account.view_move_form.move_ref`  
+```xml
+<?xml version="1.0"?>
+<data inherit_id="account.view_move_form" priority="50">
+
+    <xpath expr="//field[@name='partner_shipping_id']" position="after">
+        <field string="Bestellnummer Kunde" name="ref"/>
+    </xpath>
+
+    <xpath expr="//group[@name='sale_info_group']/label[1]" position="replace"/>
+    <xpath expr="//group[@name='sale_info_group']/field[@name='ref']" position="replace"/>
+
+</data>
+```
+Source: [snippets/account.view_move_form.move_ref.xml](https://github.com/Mint-System/Odoo-Build/tree/14.0/snippets/account.view_move_form.move_ref.xml)
+
+### Move To Check  
+ID: `mint_system.account.view_move_form.move_to_check`  
+```xml
+<?xml version="1.0"?>
+<data inherit_id="account.view_move_form" priority="50" >
+
+    <xpath expr="//field[@name='to_check']" position="replace" />
+
+    <xpath expr="//field[@name='ref']" position="after">
+        <field name="to_check" />
+    </xpath>
+
+</data>
+```
+Source: [snippets/account.view_move_form.move_to_check.xml](https://github.com/Mint-System/Odoo-Build/tree/14.0/snippets/account.view_move_form.move_to_check.xml)
 
 ### Payment Reference Readonly  
 ID: `mint_system.account.view_move_form.payment_reference_readonly`  
@@ -5939,6 +6154,20 @@ ID: `mint_system.account.view_move_tree.x_account_codes`
 Source: [snippets/account.view_move_tree.x_account_codes.xml](https://github.com/Mint-System/Odoo-Build/tree/14.0/snippets/account.view_move_tree.x_account_codes.xml)
 
 ## View Out Invoice Tree  
+### Format Invoice Date Due  
+ID: `mint_system.account.view_out_invoice_tree.format_invoice_date_due`  
+```xml
+<?xml version="1.0"?>
+<data inherit_id="account.view_out_invoice_tree" priority="50">
+
+  <xpath expr="//field[@name='invoice_date_due']" position="attributes">
+    <attribute name="widget">date</attribute>
+  </xpath>
+
+</data>
+```
+Source: [snippets/account.view_out_invoice_tree.format_invoice_date_due.xml](https://github.com/Mint-System/Odoo-Build/tree/14.0/snippets/account.view_out_invoice_tree.format_invoice_date_due.xml)
+
 ### Show Partner Shipping  
 ID: `mint_system.account.view_out_invoice_tree.show_partner_shipping`  
 ```xml
