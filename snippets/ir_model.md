@@ -2544,64 +2544,33 @@ ID: `mint_system.ir_model.stock_move.x_count_boxes`
 <?xml version='1.0' encoding='UTF-8' ?>
 <odoo>
 
-  <record id="x_count_boxes" model="ir.model.fields">
-    <field name="field_description">Anzahl Kisten</field>
-    <field name="model">stock.move</field>
-    <field name="model_id" ref="stock.model_stock_move"/>
-    <field name="name">x_count_boxes</field>
-    <field name="store" eval="True"/>
-    <field name="readonly" eval="True"/>
-    <field name="copied" eval="False"/>
-    <field name="ttype">int</field>
-    <field name="depends">quantity_done</field>
-    <field name="compute"># Count the number of packaging boxes
-for rec in self:
-    rec['x_count_boxes'] = 0
-    if rec.product_packaging:
-        
-        # Get picking delivery product name
-        delivery_name = rec.picking_id.carrier_id.product_id.name
-    
-        # Calculate the number of boxes depending on the selected packaging
-    
-        if rec.product_packaging.name == "Schale Gross":
-            rec['x_count_boxes'] = (rec.quantity_done/4 + 2.4)/2.5
-            
-        elif rec.product_packaging.name == "Schale Klein":
-            rec['x_count_boxes'] = (rec.quantity_done/6 + 0.9)/1
-            
-        elif rec.product_packaging.name == "Vakuum Gross":
-            rec['x_count_boxes'] = (rec.quantity_done/4 + 2.4)/2.5
-            
-        elif rec.product_packaging.name == "Aktionären Gutschein":
-            rec['x_count_boxes'] = ((rec.quantity_done + 9)/20)
-            
-        elif rec.product_packaging.name == "Vakuum Klein":
-            if rec.product_id.id == 68: # Filet mit Haut TK
-                rec['x_count_boxes'] = (rec.product_uom_qty + 9)/10
-            elif rec.product_id.id == 74: # Filet mit Haut V-Schnitt Tiefgekühlt
-                rec['x_count_boxes'] = (rec.product_uom_qty + 9)/20
-            else:
-                rec['x_count_boxes'] = (rec.quantity_done/8 + 0.9)/1
+    <record id="x_count_boxes" model="ir.model.fields">
+        <field name="field_description">Anzahl Kisten</field>
+        <field name="help">Count the number of packaging boxes.</field>
+        <field name="model">stock.move</field>
+        <field name="model_id" ref="stock.model_stock_move"/>
+        <field name="name">x_count_boxes</field>
+        <field name="store" eval="True"/>
+        <field name="readonly" eval="True"/>
+        <field name="copied" eval="False"/>
+        <field name="ttype">int</field>
+        <field name="depends">quantity_done,product_packaging</field>
+        <field name="compute">for rec in self:
+            rec['x_count_boxes'] = 0
+            if rec.product_packaging and rec.product_packaging.qty:
+              product_qty = rec.product_packaging.qty
+              count_boxes = rec.quantity_done / product_qty
+              
+              rec['x_count_boxes'] = int(-(-count_boxes // 1))
+              
+              if rec.product_packaging.parent_packaging and rec.product_packaging.parent_packaging.qty:
+                parent_qty = rec.product_packaging.parent_packaging.qty
+                count_boxes = rec.quantity_done / parent_qty
                 
-        elif rec.product_packaging.name == "Karton":
-            rec['x_count_boxes'] = rec.quantity_done/rec.product_packaging.qty
-            
-            if rec.product_packaging.parent_packaging and rec.product_packaging.parent_packaging.qty:
-              rec['x_count_boxes'] = rec.quantity_done/rec.product_packaging.parent_packaging.qty
-            
-        elif rec.product_packaging.name == "Kiste":
-            if rec.product_id.id == 68: # Filet mit Haut TK
-                rec['x_count_boxes'] = (rec.product_uom_qty + 9)/10
-            elif rec.product_id.id == 51: # Kopf / Backen
-                rec['x_count_boxes'] = (rec.product_uom_qty + 99)/100
-            elif rec.product_id.id == 33: # Filet mit Haut
-                rec['x_count_boxes'] = (rec.product_uom_qty + 9)/10
-            else:
-                rec['x_count_boxes'] = (rec.product_uom_qty + 14)/15
-    </field>
-  </record>
-
+                rec['x_count_boxes'] = int(-(-count_boxes // 1))
+        </field>
+    </record>
+    
 </odoo>
 
 ```
@@ -2615,6 +2584,7 @@ ID: `mint_system.ir_model.stock_move.x_count_packaging`
 
   <record id="x_count_packaging" model="ir.model.fields">
     <field name="field_description">Anzahl Verpackungen</field>
+    <field name="help">Counts the number of packages for dispaying in on the picking report.</field>
     <field name="model">stock.move</field>
     <field name="model_id" ref="stock.model_stock_move"/>
     <field name="name">x_count_packaging</field>
@@ -2623,15 +2593,9 @@ ID: `mint_system.ir_model.stock_move.x_count_packaging`
     <field name="copied" eval="False"/>
     <field name="ttype">int</field>
     <field name="depends">product_uom_qty</field>
-    <field name="compute"># Counts the number of packages for dispaying in on the picking report
-      for rec in self:
-        if rec.product_packaging:
-          if rec.product_packaging.name == "Kiste":
-            rec['x_count_packaging'] = (rec.product_uom_qty + 14)/15
-          if rec.product_packaging.name == "Schale Gross":
-            rec['x_count_packaging'] = (rec.product_uom_qty + 2.4)/2.5
-          if rec.product_packaging.name in ["Vakuum", "Schale Klein", "Karton"]:
-            rec['x_count_packaging'] = (rec.product_uom_qty + 0.9)/1</field>
+    <field name="compute">for rec in self:
+	if rec.product_packaging:
+	  rec['x_count_packaging'] = rec.product_uom_qty // rec.product_packaging.qty</field>
   </record>
 
 </odoo>
@@ -2859,6 +2823,50 @@ ID: `mint_system.ir_model.stock_picking.x_client_order_ref`
 </odoo>
 ```
 Source: [snippets/ir_model.stock_picking.x_client_order_ref.xml](https://github.com/Mint-System/Odoo-Build/tree/14.0/snippets/ir_model.stock_picking.x_client_order_ref.xml)
+
+### X Date Order  
+ID: `mint_system.ir_model.stock_picking.x_date_order`  
+```xml
+<?xml version='1.0' encoding='UTF-8' ?>
+<odoo>
+
+  <record id="x_date_order" model="ir.model.fields">
+    <field name="field_description">Bestelldatum</field>
+    <field name="model">stock.picking</field>
+    <field name="model_id" ref="stock.model_stock_picking"/>
+    <field name="name">x_date_order</field>
+    <field name="store" eval="True"/>
+    <field name="readonly" eval="True"/>
+    <field name="copied" eval="False"/>
+    <field name="ttype">datetime</field> 
+    <field name="related">sale_id.date_order</field>
+  </record>
+
+</odoo>
+```
+Source: [snippets/ir_model.stock_picking.x_date_order.xml](https://github.com/Mint-System/Odoo-Build/tree/14.0/snippets/ir_model.stock_picking.x_date_order.xml)
+
+### X Vst  
+ID: `mint_system.ir_model.stock_picking.x_vst`  
+```xml
+<?xml version='1.0' encoding='UTF-8' ?>
+<odoo>
+
+  <record id="x_vst" model="ir.model.fields">
+    <field name="field_description">VST</field>
+    <field name="model">stock.picking</field>
+    <field name="model_id" ref="stock.model_stock_picking"/>
+    <field name="name">x_vst</field>
+    <field name="store" eval="True"/>
+    <field name="readonly" eval="True"/>
+    <field name="copied" eval="False"/>
+    <field name="ttype">char</field> 
+    <field name="related">sale_id.x_vst</field>
+  </record>
+
+</odoo>
+```
+Source: [snippets/ir_model.stock_picking.x_vst.xml](https://github.com/Mint-System/Odoo-Build/tree/14.0/snippets/ir_model.stock_picking.x_vst.xml)
 
 ## Stock Production Lot  
 ### X Autoremove  

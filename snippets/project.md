@@ -211,7 +211,7 @@ ID: `mint_system.project.view_task_form2.domain_sale_line_id_active`
 <data inherit_id="project.view_task_form2" priority="50">
 
     <xpath expr="//field[@name='sale_line_id']" position="attributes">
-        <attribute name="domain">[('x_service_policy', '=', 'delivered_timesheet'),('order_id.active', '=', True),('company_id', '=', company_id), ('is_service', '=', True), ('order_partner_id', 'child_of', commercial_partner_id), ('is_expense', '=', False), ('state', 'in', ['sale', 'done'])]</attribute>
+        <attribute name="domain">[('x_service_policy', '=', 'delivered_timesheet'),('order_id.active', '=', True),('company_id', '=', company_id), ('is_service', '=', True), ('order_partner_id', 'child_of', commercial_partner_id), ('is_expense', '=', False), ('state', 'in', ['sale'])]</attribute>
     </xpath>
 
 </data>
@@ -413,8 +413,8 @@ ID: `mint_system.project.view_task_form2.x_business_requirement_id`
 <?xml version="1.0"?>
 <data inherit_id="project.view_task_form2" priority="50">
 
-	<field name="partner_id" position="before">
-	   <field name="x_business_requirement_id" domain="[('x_project_id', '=', project_id)]" context="{'default_project_id': project_id}"/>
+    <field name="partner_id" position="before">
+       <field name="x_business_requirement_id" domain="[('x_project_id', '=', project_id)]" context="{'default_project_id': project_id}"/>
   </field>
 
 </data>
@@ -428,8 +428,8 @@ ID: `mint_system.project.view_task_form2.x_lead_id`
 <?xml version="1.0"?>
 <data inherit_id="project.view_task_form2" priority="50">
 
-	<field name="partner_id" position="before">
-	   <field name="x_lead_id" attrs="{'invisible': [('x_lead_id','=', False)]}" />
+    <field name="partner_id" position="before">
+       <field name="x_lead_id" attrs="{'invisible': [('x_lead_id','=', False)]}" />
   </field>
 
 </data>

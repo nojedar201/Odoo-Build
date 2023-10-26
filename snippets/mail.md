@@ -41,6 +41,31 @@ ID: `mint_system.mail.mail_activity_view_form_popup.x_reference`
 ```
 Source: [snippets/mail.mail_activity_view_form_popup.x_reference.xml](https://github.com/Mint-System/Odoo-Build/tree/14.0/snippets/mail.mail_activity_view_form_popup.x_reference.xml)
 
+## Mail Activity View Tree  
+### Activity View  
+ID: `mint_system.mail.mail_activity_view_tree.activity_view`  
+```xml
+<?xml version="1.0"?>
+<data inherit_id="mail.mail_activity_view_tree" priority="50">
+
+  <tree position="replace">
+    <tree string="Next Activities" expand="1" decoration-danger="date_deadline &lt; current_date" decoration-success="date_deadline == current_date" default_order="date_deadline" create="false">
+      <field name="date_deadline_time"/>
+      <field string="Verantwortlich" name="user_id"/>
+      <field name="activity_type_id"/>
+      <field name="res_model_id"/>
+      <field name="res_name"/>
+      <field name="summary"/>
+      <field name="note"/>
+      <field name="date_deadline" invisible="1"/>
+    </tree>
+  </tree>
+
+</data>
+
+```
+Source: [snippets/mail.mail_activity_view_tree.activity_view.xml](https://github.com/Mint-System/Odoo-Build/tree/14.0/snippets/mail.mail_activity_view_tree.activity_view.xml)
+
 ## Mail Notification Borders  
 ### Reduce To Content  
 ID: `mint_system.mail.mail_notification_borders.reduce_to_content`  
@@ -219,11 +244,11 @@ ID: `mint_system.mail.mail_notification_light.replace_footer`
 <data inherit_id="mail.mail_notification_light" priority="50">
 
   <xpath expr="//tbody/tr[3]/td/div" position="replace">
-	  <div style="color: #999999">
-			<a t-att-href="'%s' % company.website" style="text-decoration:none; color: #999999;">
-				example.ch
-			</a>
-		</div>
+      <div style="color: #999999">
+            <a t-att-href="'%s' % company.website" style="text-decoration:none; color: #999999;">
+                example.ch
+            </a>
+        </div>
   </xpath>
 
 </data>
@@ -359,11 +384,11 @@ ID: `mint_system.mail.mail_notification_paynow.replace_footer`
 <data inherit_id="mail.mail_notification_paynow" priority="50">
 
   <xpath expr="//tbody/tr[3]/td/div" position="replace">
-	  <div style="color: #999999">
-			<a t-att-href="'%s' % company.website" style="text-decoration:none; color: #999999;">
-				example.ch
-			</a>
-		</div>
+      <div style="color: #999999">
+            <a t-att-href="'%s' % company.website" style="text-decoration:none; color: #999999;">
+                example.ch
+            </a>
+        </div>
   </xpath>
 
 </data>
