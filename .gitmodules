@@ -181,10 +181,6 @@
 	path = addons/server_tools
 	url = git@github.com:Mint-System/Odoo-Apps-Server-Tools.git
 	branch = 14.0
-[submodule "addons/odoo_apps_partner"]
-	path = addons/odoo_apps_partner
-	url = git@gitlab.com:mint-system/odoo-apps-partner.git
-	branch = 14.0
 [submodule "oca/business-requirement"]
 	path = oca/business-requirement
 	url = git@github.com:OCA/business-requirement.git
@@ -260,4 +256,8 @@
 [submodule "oca/sale-reporting"]
 	path = oca/sale-reporting
 	url = https://github.com/OCA/sale-reporting.git
+	branch = 14.0
+[submodule "addons/odoo_apps_thirdparty"]
+	path = addons/odoo_apps_thirdparty
+	url = git@gitlab.com:mint-system/odoo-apps-thirdparty.git
 	branch = 14.0

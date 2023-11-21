@@ -839,6 +839,9 @@ function save-config() {
 function remove-submodule() {
     if test -z "$1"; then echo "\$1 is empty."; exit; fi
 
+    echo "Deinit submodule"
+    git submodule deinit -f "$1"
+    
     echo "Move submodule to tmp folder"
     mkdir -p tmp/"$1"
     mv "$1" tmp/"$1"
@@ -846,11 +849,8 @@ function remove-submodule() {
     echo "Remove submodule from work tree"
     git rm -f "$1"
 
-    # echo "Deinit submodule"
-    # git submodule deinit -f "$1"
-    
-    # echo "Remove submodule from .git folder"
-    # rm -rf .git/modules/"$1"
+    echo "Remove submodule from .git folder"
+    rm -rf .git/modules/"$1"
 }
 
 function git-list-submodules() {
