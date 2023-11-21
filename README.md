@@ -2,19 +2,20 @@
 <!-- ![](./logo.png) -->
 
 Odoo Build
-================
+==========
 
 This is the [Mint System](https://www.mint-system.ch/) Odoo development environment.
 
 This projects provides a highly opinionated way to develop Odoo and Odoo modules. It supports the following scenarios:
 
 * **Docker Compose**: Spin up a Odoo, Postgres and pgAdmin Docker container and experiment locally
-* **Import and Export Database**: Use Odoo scripts to copy and restore a remote customer database in the local development environment. Investigate issues and deploy the database at wish
+* **Import and Export Database**: Use Odoo scripts to copy and restore a remote customer database to the local development environment. Investigate issues and deploy the database at wish
 * **Community Edition**: Checkout the Odoo Community Edition and start editing the source code
 * **Enterprise Modules**: Checkout the Odoo enterprise modules and deploy them into the Odoo Docker container or the Odoo source.
 * **Develop Modules**: Scaffold a new module, develop new Odoo features locally and [much more](./task.md)
 * **Customizing Snippets**: Create [snippets](./snippets.md) and push them to an Odoo database
-* **Odoo Scripts**: Develope scripts to patch Odoo modules 
+* **Odoo Scripts**: Develope scripts to patch Odoo code
+* **Odoo Image**: Build and publish an Odoo Docker image
 
 ## Requirements
 
@@ -26,7 +27,7 @@ The Odoo development environment has the following requirements:
 
 ## Usage
 
-The usage section is a set of workflows. Pick the one required by your scenario. See `task help` or [task](./task.md) for details about the projects commands.
+The usage section is a set of workflows. Pick the one required by your scenario. See `task help` or [task](./task.md) for details about the project commands.
 
 Clone this repository.
 
@@ -72,8 +73,6 @@ Run database container only
 
 ```bash
 task start db
-# or
-npm run task-start-db
 ```
 
 Initialize database
@@ -86,8 +85,6 @@ Start Odoo from source
 
 ```bash
 task start native
-# or
-npm run task-start-native
 ```
 
 Open browser to [http://localhost:8069](http://localhost:8069) and login with `admin:admin`.
@@ -100,6 +97,16 @@ Scaffold a new module.
 task create-module addons/project_report
 ```
 
+**Load modules from thirdpary folder**
+
+To load modules from a thirdparty folder, set this env var in your `.env` file
+
+```
+ODOO_ADDONS_PATH=,thirdparty/modules/,../other/modules
+```
+
+The paths will be appended to the Odoo config.
+
 ### Docker
 
 Run Odoo with Docker container.
@@ -110,8 +117,6 @@ Run docker compose.
 
 ```bash
 task start
-# or
-npm run task-start
 ```
 
 Initialize database.
@@ -158,6 +163,27 @@ task stop
 
 ```bash
 task drop-db
+```
+
+### Image
+
+To build the Docker image setup these `.env` vars:
+
+```
+ODOO_REVISION=16.5
+DOCKER_REGISTRY=mint-system/
+```
+
+Build the Odoo image.
+
+```bash
+task build
+```
+
+Publish the Odoo image.
+
+```
+task publish
 ```
 
 ## Mail
