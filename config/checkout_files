@@ -1,0 +1,16 @@
+README.md
+task
+task.md
+scripts
+snippets
+template
+.vuepress
+package.json
+package-lock.json
+.gitignore
+config/checkout_files
+logo.png
+docker-compose.yml
+.dockerignore
+Dockerfile
+build
