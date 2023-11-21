@@ -9,6 +9,7 @@
     <field name="store" eval="True"/>
     <field name="readonly" eval="False"/>
     <field name="copied" eval="True"/>
+    <field name="tracking">1</field>
     <field name="ttype">many2many</field>
     <field name="relation">res.groups</field>
   </record>
