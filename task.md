@@ -24,7 +24,7 @@
 | git-pull-submodules         |                   | Pull alls submodules.                                                                     |
 | git-update-submodules       |                   | Update submodules from .gitmodules file.                                                  |
 | init-db                     | [db]              | Initialize the Odoo database. Default is branch name.                                     |
-| init-next-env               | [env]             | Create env file for Nextcloud instance.                                                   |
+| init-nextcloud-env          | [env]             | Create env file for Nextcloud instance.                                                   |
 | init-odoo-env               | [env]             | Create env file for Odoo Instance.                                                        |
 | init-venv                   |                   | Initialize python virtual env.                                                            |
 | install-module              | [db][name,path]   | Install target Odoo module.  Default database is branch name.                             |
@@ -57,6 +57,7 @@
 | git-switch-branch           | [branch]          | Switch submodules to target branch.                                                       |
 | test-jsonrpc                | [env]             | Test json rpc connection.                                                                 |
 | test-module                 | [db][name,path]   | Test target Odoo module.                                                                  |
+| test-coverage-module        | [db][name,path]   | Generate test coverage report for target Odoo module.                                     |
 | update-app-list             | [db]              | Update app list.                                                                          |
 | update-docs                 |                   | Update project docs.                                                                      |
 | update-module               | [db][name,path]   | Update target Odoo module.                                                                |
