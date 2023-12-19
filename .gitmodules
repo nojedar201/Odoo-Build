@@ -2,10 +2,6 @@
 	path = enterprise
 	url = git@github.com:odoo/enterprise.git
 	branch = 15.0
-[submodule "odoo"]
-	path = odoo
-	url = git@github.com:odoo/odoo/.git
-	branch = 15.0
 [submodule "themes"]
 	path = themes
 	url = git@github.com:odoo/design-themes.git
@@ -237,4 +233,12 @@
 [submodule "addons/odoo_apps_thirdparty"]
 	path = addons/odoo_apps_thirdparty
 	url = git@gitlab.com:mint-system/odoo-apps-thirdparty.git
+	branch = 15.0
+[submodule "odoo"]
+	path = odoo
+	url = https://github.com/odoo/odoo.git
+	branch = 15.0
+[submodule "oca/maintenance"]
+	path = oca/maintenance
+	url = git@github.com:OCA/maintenance.git
 	branch = 15.0
