@@ -238,7 +238,3 @@
 	path = addons/odoo_apps_thirdparty
 	url = git@gitlab.com:mint-system/odoo-apps-thirdparty.git
 	branch = 15.0
-[submodule "addons/management"]
-	path = addons/management
-	url = git@github.com:Mint-System/Odoo-Apps-Management.git
-	branch = 16.0
