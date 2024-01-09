@@ -14,3 +14,7 @@
 	path = addons/server_tools
 	url = git@github.com:Mint-System/Odoo-Apps-Server-Tools.git
 	branch = 17.0
+[submodule "oca/e-commerce"]
+	path = oca/e-commerce
+	url = git@github.com:OCA/e-commerce.git
+	branch = 17.0
