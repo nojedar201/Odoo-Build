@@ -23,7 +23,7 @@ ODOO_REVISION=${ODOO_REVISION:="$GIT_BRANCH"}
 ODOO_LANGUAGE=de_CH
 ODOO_DEVELOPMENT_CONFIG_DIR="$HOME/.config/odoo-build"
 DOCKER_TAG="odoo:$ODOO_REVISION"
-: ${DOCKER_REGISTRY:=""}
+${DOCKER_REGISTRY:=""}
 TARGETARCH=amd64
 
 function set-addons-path() {
@@ -50,7 +50,9 @@ function set-addons-path() {
     # Convert to native paths
     ADDONS_PATH="$(echo $SUBMODULES_PATH | sed 's|,odoo,|,odoo/addons,|g')"
     # Append env var
-    ADDONS_PATH="${ADDONS_PATH}${ODOO_ADDONS_PATH}"
+    if [ -n "$ODOO_ADDONS_PATH" ]; then
+        ADDONS_PATH="${ADDONS_PATH},${ODOO_ADDONS_PATH}"
+    fi
 }
 
 function update-readme() {
@@ -166,26 +168,20 @@ function install-native() {
     pip install --upgrade --pre pylint-odoo
 
     echo "Install odoo dependencies"
-    pip install setuptools wheel watchdog phonenumbers
+    pip install setuptools wheel watchdog phonenumbers astor
     pip install -r odoo/requirements.txt
 
-    echo "Install oca dev tools"
-    pip install pre-commit pyyaml rst2html5 odoorpc
+    echo "Install OCA development tools"
+    pip install pre-commit pyyaml rst2html5 odoorpc coverage
 
-    echo "Install graphql dependencies"
-    pip install graphene graphql-server-core
-
-    echo "Install rest dependencies"
-    pip install cerberus pyquerystring parse-accept-language apispec\>=4.0.0 marshmallow marshmallow-objects\>=2.0.0 jsondiff
-
-    echo "Install openupgrade functions"
+    echo "Install OCA openupgrade tools"
     pip install git+https://github.com/OCA/openupgradelib.git@master#egg=openupgradelib
 
-    echo "Install addon dependencies"
-    pip install prometheus_client pika
-    
-    echo "Install edi dependencies"
-    pip install pyzbar numpy pdf2image opencv-python
+    echo "Install module dependencies: prometheus_exporter"
+    pip install prometheus_client
+
+    echo "Install module dependencies: base_view_inheritance_extension"
+    pip install astor
 }
 
 function open-url-with-delay(){
@@ -216,7 +212,6 @@ function start() {
 
     if [[ "$1" =~ "db" ]]; then
         docker-compose up -d db
-        echo "Open http://localhost:8000 url in your browser."
     fi
 
     if [[ "$1" =~ "admin" ]]; then
@@ -247,6 +242,18 @@ function start() {
 function down() {
     if test -z "$1"; then
         docker-compose down -v
+    fi
+
+    if [[ "$1" =~ "db" ]]; then
+        docker-compose rm -f -s -v db
+    fi
+
+    if [[ "$1" =~ "admin" ]]; then
+        docker-compose rm -f -s -v admin
+    fi
+    
+    if [[ "$1" =~ "odoo" ]]; then
+        docker-compose rm -f -s -v odoo
     fi
 
     if [[ "$1" =~ "mail" ]]; then
@@ -406,7 +413,23 @@ function test-module() {
     activate-venv
     set-addons-path
     echo "Testing module $MODULE_NAME on $DATABASE ..."
-    odoo-bin -d "$DATABASE" -i "$MODULE_NAME" --config 'config/odoo.conf' --addons-path="$ADDONS_PATH" --stop-after-init --test-tags /"$MODULE_NAME"
+    odoo-bin -d "$DATABASE" -i "$MODULE_NAME" --config 'config/odoo.conf' --addons-path="$ADDONS_PATH" --stop-after-init --no-http --test-tags /"$MODULE_NAME"
+}
+
+function test-coverage-module() {
+    DATABASE="$1"
+    MODULE_NAME=$(basename "$2")
+
+    # Use default database if second param is not given 
+    if test -z "$2"; then
+        DATABASE="$GIT_BRANCH"
+        MODULE_NAME=$(basename "$1")
+    fi
+
+    activate-venv
+    set-addons-path
+    echo "Testing module $MODULE_NAME on $DATABASE ..."
+    coverage run odoo-bin -d "$DATABASE" -i "$MODULE_NAME" --config 'config/odoo.conf' --addons-path="$ADDONS_PATH" --stop-after-init --test-tags /"$MODULE_NAME"
 }
 
 function remove-module() {
@@ -497,7 +520,7 @@ function git-update-submodules() {
     echo "Update submodules."
     SUBMODULES=$(git config --file .gitmodules --get-regexp url | sed -e 's/submodule.//g' -e 's/.url.*//g')
     for SUBMODULE in $SUBMODULES; do
-        git submodule update --init "$SUBMODULE"
+        git submodule update --depth 5 "$SUBMODULE"
     done
 }
 
@@ -1026,6 +1049,9 @@ case "$1" in
         ;;
     test-module)
         test-module "$2" "$3"
+        ;;
+    test-coverage-module)
+        test-coverage-module "$2" "$3"
         ;;
     create-module)
         create-module "$2"

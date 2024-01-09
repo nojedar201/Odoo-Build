@@ -31,7 +31,7 @@
 | install-native              |                   | Install Odoo requirements in source folder.                                               |
 | install-odoo-scripts        |                   | Install Odoo scripts.                                                                     |
 | install-snippet             | [env][path]       | Install snippet xml definition.                                                           |
-| kill                        | [name]            | Remove docker containers and volumes.                                                     |
+| kill                        | [name]            | Remove docker containers and volumes. Options: none, db, admin, odoo, mail.               |
 | lint-module                 | [path]            | Run pylint odoo for module.                                                               |
 | lint-snippets               |                   | Run checks for all snippets.                                                              |
 | list                        |                   | List docker services.                                                                     |
@@ -57,6 +57,7 @@
 | git-switch-branch           | [branch]          | Switch submodules to target branch.                                                       |
 | test-jsonrpc                | [env]             | Test json rpc connection.                                                                 |
 | test-module                 | [db][name,path]   | Test target Odoo module.                                                                  |
+| test-coverage-module        | [db][name,path]   | Generate test coverage report for target Odoo module.                                     |
 | update-app-list             | [db]              | Update app list.                                                                          |
 | update-docs                 |                   | Update project docs.                                                                      |
 | update-module               | [db][name,path]   | Update target Odoo module.                                                                |
