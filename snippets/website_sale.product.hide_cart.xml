@@ -4,4 +4,10 @@
     <attribute name="t-if">request.session.uid</attribute>
   </xpath>
 
+  <xpath expr="//div[@id='add_to_cart_wrap']" position="before">
+    <style t-if="not request.session.uid">
+        .css_quantity{display: none !important;}
+    </style>
+  </xpath>
+
 </data>
