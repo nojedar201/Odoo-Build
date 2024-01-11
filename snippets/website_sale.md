@@ -388,3 +388,17 @@ ID: `mint_system.website_sale.products_item.prefix_price`
 ```
 Source: [snippets/website_sale.products_item.prefix_price.xml](https://github.com/Mint-System/Odoo-Build/tree/16.0/snippets/website_sale.products_item.prefix_price.xml)
 
+## Hide Price  
+### Prefix Price  
+ID: `mint_system.website_sale.products_item.prefix_price`  
+```xml
+<data inherit_id="website_sale.products_item" priority="50">
+
+  <t t-if="'base_price' in template_price_vals" position="before">
+    <span>From</span>
+  </t>
+
+</data>
+```
+Source: [snippets/website_sale.products_item.prefix_price.xml](https://github.com/Mint-System/Odoo-Build/tree/16.0/snippets/website_sale.products_item.prefix_price.xml)
+
