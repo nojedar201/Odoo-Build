@@ -26,3 +26,15 @@
 	path = oca/e-commerce
 	url = git@github.com:OCA/e-commerce.git
 	branch = 17.0
+[submodule "oca/sale-workflow"]
+	path = oca/sale-workflow
+	url = git@github.com:OCA/sale-workflow.git
+	branch = 17.0
+[submodule "addons/hr"]
+	path = addons/hr
+	url = git@github.com:Mint-System/Odoo-Apps-HR.git
+	branch = 17.0
+[submodule "addons/stock_logistics_workflow"]
+	path = addons/stock_logistics_workflow
+	url = git@github.com:Mint-System/Odoo-Apps-Stock-Logistics-Workflow.git
+	branch = 17.0
