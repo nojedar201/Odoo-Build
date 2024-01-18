@@ -38,3 +38,7 @@
 	path = addons/stock_logistics_workflow
 	url = git@github.com:Mint-System/Odoo-Apps-Stock-Logistics-Workflow.git
 	branch = 17.0
+[submodule "addons/manufacture"]
+	path = addons/manufacture
+	url = git@github.com:Mint-System/Odoo-Apps-manufacture.git
+	branch = 17.0
