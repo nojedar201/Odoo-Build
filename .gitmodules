@@ -22,10 +22,6 @@
 	path = addons/odoo_apps_thirdparty
 	url = git@gitlab.com:mint-system/odoo-apps-thirdparty.git
 	branch = 17.0
-[submodule "oca/e-commerce"]
-	path = oca/e-commerce
-	url = git@github.com:OCA/e-commerce.git
-	branch = 17.0
 [submodule "oca/sale-workflow"]
 	path = oca/sale-workflow
 	url = git@github.com:OCA/sale-workflow.git
