@@ -200,55 +200,80 @@ ID: `mint_system.account.report_invoice_document.add_information_space`
 ```
 Source: [snippets/account.report_invoice_document.add_information_space.xml](https://github.com/Mint-System/Odoo-Build/tree/16.0/snippets/account.report_invoice_document.add_information_space.xml)
 
+### Add Membership Note  
+ID: `mint_system.account.report_invoice_document.add_membership_note`  
+```xml
+<data inherit_id="account.report_invoice_document" priority="50">
+    <p name="payment_communication" position="before">
+        <t t-set="is_recurring" t-value="o.invoice_line_ids.product_id.filtered('membership_ok')"/>
+        <t t-set="membership_partner_id" t-value="o.partner_id.parent_id.address_get(['membership'])['membership'] or o.partner_id.address_get(['membership'])['membership']"/>
+        <t t-if="membership_partner_id != o.partner_id.id" t-set="membership_partner" t-value="env['res.partner'].browse(membership_partner_id)"/>
+        <t t-if="is_recurring and membership_partner">
+            <p>Als Kontaktperson für diese Mitgliedschaft sind bei uns folgende Angaben hinterlegt: <span t-esc="membership_partner.name"/> (<span t-esc="membership_partner.email"/>)</p>
+            <p>Diese Person bekommt auch die Einladung für die Mitgliederversammlung. Bitte melden Sie uns allfällige Mutationen umgehend.</p>
+        </t>
+    </p>
+</data>
+```
+Source: [snippets/account.report_invoice_document.add_membership_note.xml](https://github.com/Mint-System/Odoo-Build/tree/16.0/snippets/account.report_invoice_document.add_membership_note.xml)
+
 ### Add Note  
 ID: `mint_system.account.report_invoice_document.add_note`  
 ```xml
-<?xml version="1.0"?>
 <data inherit_id="account.report_invoice_document" priority="50">
-    <xpath expr="//div[@name='comment']" position="replace">
-        <div style="margin-top: 50px">
-            <div>
-                <t t-if="not is_html_empty(o.narration)" name="narration">
-                    <span t-field="o.narration"/>
-                </t>
-                <t t-elif="o.partner_id.country_id.code == 'CH'">
-                    <span>The exporter of the products covered by this document declares that, except where otherwise clearly indicated, these products are of swiss preferential origin.</span>
-                    <br/>
-                    <span style="font-style: italic">"The total quantity of delivered products is missing from delivery note"</span>
-                </t>
-                <t t-elif="o.partner_id.country_id.code == 'DE'">
-                    <span style="font-weight: bold">EORI: DE379461566911068 / Incoterms: DAP</span>
-                    <br/>
-                    <span>The exporter of the products covered by this document declares that, except where otherwise clearly indicated, these products are of swiss preferential origin.</span>
-                    <br/>
-                    <span style="font-style: italic">"The total quantity of delivered products is missing from delivery note"</span>
-                </t>
-                <t t-elif="o.partner_id.country_id.code in ['GR', 'AL', 'HR', 'MNE', 'MC']">
-                    <span style="font-weight: bold">EORI: DE379461566911068 / Incoterms: Ex-works / Tax free intracommunity delivery acc. to UstG &#xA7;6a.</span>
-                    <br/>
-                    <span>The exporter of the products covered by this document declares that, except where otherwise clearly indicated, these products are of swiss preferential origin.</span>
-                    <br/>
-                    <span style="font-style: italic">"The total quantity of delivered products is missing from delivery note"</span>
-                </t>
-                <t t-elif="o.partner_id.parent_id.country_id.country_group_ids and o.partner_id.parent_id.country_id.country_group_ids[0].id == 1">
-                    <span style="font-weight: bold">EORI: DE379461566911068 / Incoterms: DDP / Tax free intracommunity delivery acc. to UstG &#xA7;6a.</span>
-                    <br/>
-                    <span>The exporter of the products covered by this document declares that, except where otherwise clearly indicated, these products are of swiss preferential origin.</span>
-                    <br/>
-                    <span style="font-style: italic">"The total quantity of delivered products is missing from delivery note"</span>
-                </t>
-                <t t-else="">
-                    <span style="font-weight: bold">Incoterms: Ex-works</span>
-                    <br/>
-                    <span>The exporter of the products covered by this document declares that, except where otherwise clearly indicated, these products are of swiss preferential origin.</span>
-                    <br/>
-                    <span style="font-style: italic">"The total quantity of delivered products is missing from delivery note"</span>
-                </t>
-            </div>
-        </div>
-    </xpath>
-</data>
 
+    <xpath expr="//div[@name='comment']" position="replace">
+    <div style="margin-top: 50px">
+
+      <div>
+        <t t-if="not is_html_empty(o.narration)" name="narration">
+             <span t-field="o.narration"/>
+        </t>
+        <t t-elif="o.company_id.id == 2">
+          <span style="font-weight: bold">Incoterms: DDP / Tax free intracommunity delivery acc. to UstG §6a.</span>
+          <br/>
+          <span>The exporter of the products covered by this document declares that, except where otherwise clearly indicated, these products are of swiss preferential origin.</span>
+          <br/>
+          <span style="font-style: italic">"The total quantity of delivered products is missing from delivery note"</span>
+        </t>
+        <t t-elif="o.partner_id.country_id.code == 'CH'">
+          <span>The exporter of the products covered by this document declares that, except where otherwise clearly indicated, these products are of swiss preferential origin.</span>
+          <br/>
+          <span style="font-style: italic">"The total quantity of delivered products is missing from delivery note"</span>
+        </t>
+        <t t-elif="o.partner_id.country_id.code == 'DE'">
+          <span style="font-weight: bold">EORI: DE379461566911068 / Incoterms: DAP</span>
+          <br/>
+          <span>The exporter of the products covered by this document declares that, except where otherwise clearly indicated, these products are of swiss preferential origin.</span>
+          <br/>
+          <span style="font-style: italic">"The total quantity of delivered products is missing from delivery note"</span>
+        </t>
+        <t t-elif="o.partner_id.country_id.code in ['GR', 'AL', 'HR', 'MNE', 'MC']">
+          <span style="font-weight: bold">EORI: DE379461566911068 / Incoterms: Ex-works / Tax free intracommunity delivery acc. to UstG §6a.</span>
+          <br/>
+          <span>The exporter of the products covered by this document declares that, except where otherwise clearly indicated, these products are of swiss preferential origin.</span>
+          <br/>
+          <span style="font-style: italic">"The total quantity of delivered products is missing from delivery note"</span>
+        </t>
+        <t t-elif="o.partner_id.parent_id.country_id.country_group_ids and o.partner_id.parent_id.country_id.country_group_ids[0].id == 1">
+          <span style="font-weight: bold">EORI: DE379461566911068 / Incoterms: DDP / Tax free intracommunity delivery acc. to UstG §6a.</span>
+          <br/>
+          <span>The exporter of the products covered by this document declares that, except where otherwise clearly indicated, these products are of swiss preferential origin.</span>
+          <br/>
+          <span style="font-style: italic">"The total quantity of delivered products is missing from delivery note"</span>
+        </t>
+        <t t-else="">
+          <span style="font-weight: bold">Incoterms: Ex-works</span>
+          <br/>
+          <span>The exporter of the products covered by this document declares that, except where otherwise clearly indicated, these products are of swiss preferential origin.</span>
+          <br/>
+          <span style="font-style: italic">"The total quantity of delivered products is missing from delivery note"</span>
+        </t>
+      </div>
+    </div>
+  </xpath>
+
+</data>
 ```
 Source: [snippets/account.report_invoice_document.add_note.xml](https://github.com/Mint-System/Odoo-Build/tree/16.0/snippets/account.report_invoice_document.add_note.xml)
 
@@ -1278,6 +1303,17 @@ ID: `mint_system.account.report_invoice_document.remove_incoterm`
 ```
 Source: [snippets/account.report_invoice_document.remove_incoterm.xml](https://github.com/Mint-System/Odoo-Build/tree/16.0/snippets/account.report_invoice_document.remove_incoterm.xml)
 
+### Remove Origin  
+ID: `mint_system.account.report_invoice_document.remove_origin`  
+```xml
+<?xml version="1.0"?>
+<data inherit_id="account.report_invoice_document" priority="50">
+    <div name="origin" position="replace"/>
+</data>
+
+```
+Source: [snippets/account.report_invoice_document.remove_origin.xml](https://github.com/Mint-System/Odoo-Build/tree/16.0/snippets/account.report_invoice_document.remove_origin.xml)
+
 ### Remove Payment Communication  
 ID: `mint_system.account.report_invoice_document.remove_payment_communication`  
 ```xml
@@ -1310,6 +1346,17 @@ ID: `mint_system.account.report_invoice_document.remove_reference`
 
 ```
 Source: [snippets/account.report_invoice_document.remove_reference.xml](https://github.com/Mint-System/Odoo-Build/tree/16.0/snippets/account.report_invoice_document.remove_reference.xml)
+
+### Remove Shipping Address  
+ID: `mint_system.account.report_invoice_document.remove_shipping_address`  
+```xml
+<?xml version="1.0"?>
+<data inherit_id="account.report_invoice_document" priority="50">
+    <xpath expr="//div[@t-field='o.partner_shipping_id']/.. " position="replace"/>
+</data>
+
+```
+Source: [snippets/account.report_invoice_document.remove_shipping_address.xml](https://github.com/Mint-System/Odoo-Build/tree/16.0/snippets/account.report_invoice_document.remove_shipping_address.xml)
 
 ### Remove Summary Table  
 ID: `mint_system.account.report_invoice_document.remove_summary_table`  
@@ -2318,6 +2365,20 @@ ID: `mint_system.account.report_invoice_document.show_order_id`
 
 ```
 Source: [snippets/account.report_invoice_document.show_order_id.xml](https://github.com/Mint-System/Odoo-Build/tree/16.0/snippets/account.report_invoice_document.show_order_id.xml)
+
+### Show Parent Partner Reference  
+ID: `mint_system.account.report_invoice_document.show_parent_partner_reference`  
+```xml
+<data inherit_id="account.report_invoice_document" priority="50">
+    <p t-field="o.partner_id.ref" position="replace">
+        <p class="m-0" t-esc="o.partner_id.ref or o.partner_id.parent_id.ref" />
+    </p>
+    <div t-if="o.partner_id.ref" position="attributes">
+        <attribute name="t-if">o.partner_id.ref or o.partner_id.parent_id.ref</attribute>
+    </div>
+</data>
+```
+Source: [snippets/account.report_invoice_document.show_parent_partner_reference.xml](https://github.com/Mint-System/Odoo-Build/tree/16.0/snippets/account.report_invoice_document.show_parent_partner_reference.xml)
 
 ### Show Product Name  
 ID: `mint_system.account.report_invoice_document.show_product_name`  
@@ -2997,55 +3058,80 @@ ID: `mint_system.account.report_invoice_document.add_information_space`
 ```
 Source: [snippets/account.report_invoice_document.add_information_space.xml](https://github.com/Mint-System/Odoo-Build/tree/16.0/snippets/account.report_invoice_document.add_information_space.xml)
 
+### Add Membership Note  
+ID: `mint_system.account.report_invoice_document.add_membership_note`  
+```xml
+<data inherit_id="account.report_invoice_document" priority="50">
+    <p name="payment_communication" position="before">
+        <t t-set="is_recurring" t-value="o.invoice_line_ids.product_id.filtered('membership_ok')"/>
+        <t t-set="membership_partner_id" t-value="o.partner_id.parent_id.address_get(['membership'])['membership'] or o.partner_id.address_get(['membership'])['membership']"/>
+        <t t-if="membership_partner_id != o.partner_id.id" t-set="membership_partner" t-value="env['res.partner'].browse(membership_partner_id)"/>
+        <t t-if="is_recurring and membership_partner">
+            <p>Als Kontaktperson für diese Mitgliedschaft sind bei uns folgende Angaben hinterlegt: <span t-esc="membership_partner.name"/> (<span t-esc="membership_partner.email"/>)</p>
+            <p>Diese Person bekommt auch die Einladung für die Mitgliederversammlung. Bitte melden Sie uns allfällige Mutationen umgehend.</p>
+        </t>
+    </p>
+</data>
+```
+Source: [snippets/account.report_invoice_document.add_membership_note.xml](https://github.com/Mint-System/Odoo-Build/tree/16.0/snippets/account.report_invoice_document.add_membership_note.xml)
+
 ### Add Note  
 ID: `mint_system.account.report_invoice_document.add_note`  
 ```xml
-<?xml version="1.0"?>
 <data inherit_id="account.report_invoice_document" priority="50">
-    <xpath expr="//div[@name='comment']" position="replace">
-        <div style="margin-top: 50px">
-            <div>
-                <t t-if="not is_html_empty(o.narration)" name="narration">
-                    <span t-field="o.narration"/>
-                </t>
-                <t t-elif="o.partner_id.country_id.code == 'CH'">
-                    <span>The exporter of the products covered by this document declares that, except where otherwise clearly indicated, these products are of swiss preferential origin.</span>
-                    <br/>
-                    <span style="font-style: italic">"The total quantity of delivered products is missing from delivery note"</span>
-                </t>
-                <t t-elif="o.partner_id.country_id.code == 'DE'">
-                    <span style="font-weight: bold">EORI: DE379461566911068 / Incoterms: DAP</span>
-                    <br/>
-                    <span>The exporter of the products covered by this document declares that, except where otherwise clearly indicated, these products are of swiss preferential origin.</span>
-                    <br/>
-                    <span style="font-style: italic">"The total quantity of delivered products is missing from delivery note"</span>
-                </t>
-                <t t-elif="o.partner_id.country_id.code in ['GR', 'AL', 'HR', 'MNE', 'MC']">
-                    <span style="font-weight: bold">EORI: DE379461566911068 / Incoterms: Ex-works / Tax free intracommunity delivery acc. to UstG &#xA7;6a.</span>
-                    <br/>
-                    <span>The exporter of the products covered by this document declares that, except where otherwise clearly indicated, these products are of swiss preferential origin.</span>
-                    <br/>
-                    <span style="font-style: italic">"The total quantity of delivered products is missing from delivery note"</span>
-                </t>
-                <t t-elif="o.partner_id.parent_id.country_id.country_group_ids and o.partner_id.parent_id.country_id.country_group_ids[0].id == 1">
-                    <span style="font-weight: bold">EORI: DE379461566911068 / Incoterms: DDP / Tax free intracommunity delivery acc. to UstG &#xA7;6a.</span>
-                    <br/>
-                    <span>The exporter of the products covered by this document declares that, except where otherwise clearly indicated, these products are of swiss preferential origin.</span>
-                    <br/>
-                    <span style="font-style: italic">"The total quantity of delivered products is missing from delivery note"</span>
-                </t>
-                <t t-else="">
-                    <span style="font-weight: bold">Incoterms: Ex-works</span>
-                    <br/>
-                    <span>The exporter of the products covered by this document declares that, except where otherwise clearly indicated, these products are of swiss preferential origin.</span>
-                    <br/>
-                    <span style="font-style: italic">"The total quantity of delivered products is missing from delivery note"</span>
-                </t>
-            </div>
-        </div>
-    </xpath>
-</data>
 
+    <xpath expr="//div[@name='comment']" position="replace">
+    <div style="margin-top: 50px">
+
+      <div>
+        <t t-if="not is_html_empty(o.narration)" name="narration">
+             <span t-field="o.narration"/>
+        </t>
+        <t t-elif="o.company_id.id == 2">
+          <span style="font-weight: bold">Incoterms: DDP / Tax free intracommunity delivery acc. to UstG §6a.</span>
+          <br/>
+          <span>The exporter of the products covered by this document declares that, except where otherwise clearly indicated, these products are of swiss preferential origin.</span>
+          <br/>
+          <span style="font-style: italic">"The total quantity of delivered products is missing from delivery note"</span>
+        </t>
+        <t t-elif="o.partner_id.country_id.code == 'CH'">
+          <span>The exporter of the products covered by this document declares that, except where otherwise clearly indicated, these products are of swiss preferential origin.</span>
+          <br/>
+          <span style="font-style: italic">"The total quantity of delivered products is missing from delivery note"</span>
+        </t>
+        <t t-elif="o.partner_id.country_id.code == 'DE'">
+          <span style="font-weight: bold">EORI: DE379461566911068 / Incoterms: DAP</span>
+          <br/>
+          <span>The exporter of the products covered by this document declares that, except where otherwise clearly indicated, these products are of swiss preferential origin.</span>
+          <br/>
+          <span style="font-style: italic">"The total quantity of delivered products is missing from delivery note"</span>
+        </t>
+        <t t-elif="o.partner_id.country_id.code in ['GR', 'AL', 'HR', 'MNE', 'MC']">
+          <span style="font-weight: bold">EORI: DE379461566911068 / Incoterms: Ex-works / Tax free intracommunity delivery acc. to UstG §6a.</span>
+          <br/>
+          <span>The exporter of the products covered by this document declares that, except where otherwise clearly indicated, these products are of swiss preferential origin.</span>
+          <br/>
+          <span style="font-style: italic">"The total quantity of delivered products is missing from delivery note"</span>
+        </t>
+        <t t-elif="o.partner_id.parent_id.country_id.country_group_ids and o.partner_id.parent_id.country_id.country_group_ids[0].id == 1">
+          <span style="font-weight: bold">EORI: DE379461566911068 / Incoterms: DDP / Tax free intracommunity delivery acc. to UstG §6a.</span>
+          <br/>
+          <span>The exporter of the products covered by this document declares that, except where otherwise clearly indicated, these products are of swiss preferential origin.</span>
+          <br/>
+          <span style="font-style: italic">"The total quantity of delivered products is missing from delivery note"</span>
+        </t>
+        <t t-else="">
+          <span style="font-weight: bold">Incoterms: Ex-works</span>
+          <br/>
+          <span>The exporter of the products covered by this document declares that, except where otherwise clearly indicated, these products are of swiss preferential origin.</span>
+          <br/>
+          <span style="font-style: italic">"The total quantity of delivered products is missing from delivery note"</span>
+        </t>
+      </div>
+    </div>
+  </xpath>
+
+</data>
 ```
 Source: [snippets/account.report_invoice_document.add_note.xml](https://github.com/Mint-System/Odoo-Build/tree/16.0/snippets/account.report_invoice_document.add_note.xml)
 
@@ -4075,6 +4161,17 @@ ID: `mint_system.account.report_invoice_document.remove_incoterm`
 ```
 Source: [snippets/account.report_invoice_document.remove_incoterm.xml](https://github.com/Mint-System/Odoo-Build/tree/16.0/snippets/account.report_invoice_document.remove_incoterm.xml)
 
+### Remove Origin  
+ID: `mint_system.account.report_invoice_document.remove_origin`  
+```xml
+<?xml version="1.0"?>
+<data inherit_id="account.report_invoice_document" priority="50">
+    <div name="origin" position="replace"/>
+</data>
+
+```
+Source: [snippets/account.report_invoice_document.remove_origin.xml](https://github.com/Mint-System/Odoo-Build/tree/16.0/snippets/account.report_invoice_document.remove_origin.xml)
+
 ### Remove Payment Communication  
 ID: `mint_system.account.report_invoice_document.remove_payment_communication`  
 ```xml
@@ -4107,6 +4204,17 @@ ID: `mint_system.account.report_invoice_document.remove_reference`
 
 ```
 Source: [snippets/account.report_invoice_document.remove_reference.xml](https://github.com/Mint-System/Odoo-Build/tree/16.0/snippets/account.report_invoice_document.remove_reference.xml)
+
+### Remove Shipping Address  
+ID: `mint_system.account.report_invoice_document.remove_shipping_address`  
+```xml
+<?xml version="1.0"?>
+<data inherit_id="account.report_invoice_document" priority="50">
+    <xpath expr="//div[@t-field='o.partner_shipping_id']/.. " position="replace"/>
+</data>
+
+```
+Source: [snippets/account.report_invoice_document.remove_shipping_address.xml](https://github.com/Mint-System/Odoo-Build/tree/16.0/snippets/account.report_invoice_document.remove_shipping_address.xml)
 
 ### Remove Summary Table  
 ID: `mint_system.account.report_invoice_document.remove_summary_table`  
@@ -5116,6 +5224,20 @@ ID: `mint_system.account.report_invoice_document.show_order_id`
 ```
 Source: [snippets/account.report_invoice_document.show_order_id.xml](https://github.com/Mint-System/Odoo-Build/tree/16.0/snippets/account.report_invoice_document.show_order_id.xml)
 
+### Show Parent Partner Reference  
+ID: `mint_system.account.report_invoice_document.show_parent_partner_reference`  
+```xml
+<data inherit_id="account.report_invoice_document" priority="50">
+    <p t-field="o.partner_id.ref" position="replace">
+        <p class="m-0" t-esc="o.partner_id.ref or o.partner_id.parent_id.ref" />
+    </p>
+    <div t-if="o.partner_id.ref" position="attributes">
+        <attribute name="t-if">o.partner_id.ref or o.partner_id.parent_id.ref</attribute>
+    </div>
+</data>
+```
+Source: [snippets/account.report_invoice_document.show_parent_partner_reference.xml](https://github.com/Mint-System/Odoo-Build/tree/16.0/snippets/account.report_invoice_document.show_parent_partner_reference.xml)
+
 ### Show Product Name  
 ID: `mint_system.account.report_invoice_document.show_product_name`  
 ```xml
@@ -5615,6 +5737,21 @@ ID: `mint_system.account.res_config_settings_view_form.domain_expense_currency_e
 ```
 Source: [snippets/account.res_config_settings_view_form.domain_expense_currency_exchange_account_id.xml](https://github.com/Mint-System/Odoo-Build/tree/16.0/snippets/account.res_config_settings_view_form.domain_expense_currency_exchange_account_id.xml)
 
+## View Account Invoice Filter  
+### Is Move Sent  
+ID: `mint_system.account.view_account_invoice_filter.is_move_sent`  
+```xml
+<?xml version="1.0"?>
+<data inherit_id="account.view_account_invoice_filter" priority="50">
+    <filter name="to_check" position="after">
+        <filter name="is_sent" string="Sent" domain="[('is_move_sent', '=', True)]"/>
+        <filter name="is_not_sent" string="Not Sent" domain="[('is_move_sent', '=', False)]"/>
+    </filter>
+</data>
+
+```
+Source: [snippets/account.view_account_invoice_filter.is_move_sent.xml](https://github.com/Mint-System/Odoo-Build/tree/16.0/snippets/account.view_account_invoice_filter.is_move_sent.xml)
+
 ## View Account Journal Form  
 ### Show Payment Method Code  
 ID: `mint_system.account.view_account_journal_form.show_payment_method_code`  
@@ -5827,6 +5964,19 @@ ID: `mint_system.account.view_invoice_tree.add_currency_id`
 
 ```
 Source: [snippets/account.view_invoice_tree.add_currency_id.xml](https://github.com/Mint-System/Odoo-Build/tree/16.0/snippets/account.view_invoice_tree.add_currency_id.xml)
+
+### Add Is Move Sent  
+ID: `mint_system.account.view_invoice_tree.add_is_move_sent`  
+```xml
+<?xml version="1.0"?>
+<data inherit_id="account.view_invoice_tree" priority="50">
+    <field name="state" position="after">
+        <field name="is_move_sent" optional="hide"/>
+    </field>
+</data>
+
+```
+Source: [snippets/account.view_invoice_tree.add_is_move_sent.xml](https://github.com/Mint-System/Odoo-Build/tree/16.0/snippets/account.view_invoice_tree.add_is_move_sent.xml)
 
 ### Format Ref  
 ID: `mint_system.account.view_invoice_tree.format_ref`  
