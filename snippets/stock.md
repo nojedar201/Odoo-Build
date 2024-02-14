@@ -6754,6 +6754,18 @@ ID: `mint_system.stock.view_picking_form.show_weight`
 ```
 Source: [snippets/stock.view_picking_form.show_weight.xml](https://github.com/Mint-System/Odoo-Build/tree/16.0/snippets/stock.view_picking_form.show_weight.xml)
 
+### X As4 Import  
+ID: `mint_system.stock.view_picking_form.x_as4_import`  
+```xml
+<?xml version="1.0"?>
+<data inherit_id="stock.view_picking_form" priority="50">
+    <xpath expr="//group[@name='other_infos']" position="inside">
+        <field name="x_as4_import"/>
+    </xpath>
+</data>
+```
+Source: [snippets/stock.view_picking_form.x_as4_import.xml](https://github.com/Mint-System/Odoo-Build/tree/16.0/snippets/stock.view_picking_form.x_as4_import.xml)
+
 ### X Autocomplete  
 ID: `mint_system.stock.view_picking_form.x_autocomplete`  
 ```xml

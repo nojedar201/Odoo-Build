@@ -1,5 +1,45 @@
 # Ir Model
 ## Account Analytic Line  
+### X Parent Id Display Name  
+ID: `mint_system.ir_model.account_analytic_line.x_parent_id_display_name`  
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="x_parent_id_display_name" model="ir.model.fields">
+        <field name="field_description">Übergeordnete Aufgabe</field>
+        <field name="model">account.move.line</field>
+        <field name="model_id" ref="account.model_account_analytic_line"/>
+        <field name="name">x_parent_id_display_name</field>
+        <field name="readonly" eval="True"/>
+        <field name="store" eval="True"/>
+        <field name="copied" eval="False"/>
+        <field name="ttype">char</field>
+        <field name="related">task_id.parent_id.display_name</field>        
+    </record>
+</odoo>
+```
+Source: [snippets/ir_model.account_analytic_line.x_parent_id_display_name.xml](https://github.com/Mint-System/Odoo-Build/tree/16.0/snippets/ir_model.account_analytic_line.x_parent_id_display_name.xml)
+
+### X Phase Id Name  
+ID: `mint_system.ir_model.account_analytic_line.x_phase_id_name`  
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="x_phase_id_name" model="ir.model.fields">
+        <field name="field_description">Project Phase</field>
+        <field name="model">account.move.line</field>
+        <field name="model_id" ref="account.model_account_analytic_line"/>
+        <field name="name">x_phase_ids_name</field>
+        <field name="readonly" eval="True"/>
+        <field name="store" eval="True"/>
+        <field name="copied" eval="False"/>
+        <field name="ttype">char</field>
+        <field name="related">task_id.phase_id.name</field>        
+    </record>
+</odoo>
+```
+Source: [snippets/ir_model.account_analytic_line.x_phase_id_name.xml](https://github.com/Mint-System/Odoo-Build/tree/16.0/snippets/ir_model.account_analytic_line.x_phase_id_name.xml)
+
 ### X Sale Order Id  
 ID: `mint_system.ir_model.account_analytic_line.x_sale_order_id`  
 ```xml
@@ -166,6 +206,27 @@ ID: `mint_system.ir_model.account_move.x_bexio_name`
 ```
 Source: [snippets/ir_model.account_move.x_bexio_name.xml](https://github.com/Mint-System/Odoo-Build/tree/16.0/snippets/ir_model.account_move.x_bexio_name.xml)
 
+### X Country Id  
+ID: `mint_system.ir_model.account_move.x_country_id`  
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="x_country_id" model="ir.model.fields">
+        <field name="field_description">Land</field>
+        <field name="model">account.move</field>
+        <field name="model_id" ref="account.model_account_move"/>
+        <field name="name">x_country_id</field>
+        <field name="store" eval="True"/>
+        <field name="readonly" eval="True"/>
+        <field name="copied" eval="False"/>
+        <field name="ttype">many2one</field>
+        <field name="relation">partner_id.country_id</field>
+    </record>
+</odoo>
+
+```
+Source: [snippets/ir_model.account_move.x_country_id.xml](https://github.com/Mint-System/Odoo-Build/tree/16.0/snippets/ir_model.account_move.x_country_id.xml)
+
 ### X Date Done  
 ID: `mint_system.ir_model.account_move.x_date_done`  
 ```xml
@@ -315,6 +376,25 @@ ID: `mint_system.ir_model.account_move.x_invoice_warn_msg`
 
 ```
 Source: [snippets/ir_model.account_move.x_invoice_warn_msg.xml](https://github.com/Mint-System/Odoo-Build/tree/16.0/snippets/ir_model.account_move.x_invoice_warn_msg.xml)
+
+### X Is Test  
+ID: `mint_system.ir_model.account_move.x_is_test`  
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="x_is_test" model="ir.model.fields">
+        <field name="field_description">Test</field>
+        <field name="model">account.move</field>
+        <field name="model_id" ref="account.model_account_move"/>
+        <field name="name">x_test</field>
+        <field name="store" eval="True"/>
+        <field name="readonly" eval="False"/>
+        <field name="copied" eval="False"/>
+        <field name="ttype">Boolean</field>
+    </record>
+</odoo>
+```
+Source: [snippets/ir_model.account_move.x_is_test.xml](https://github.com/Mint-System/Odoo-Build/tree/16.0/snippets/ir_model.account_move.x_is_test.xml)
 
 ### X Picking List  
 ID: `mint_system.ir_model.account_move.x_picking_list`  
@@ -2551,6 +2631,27 @@ ID: `mint_system.ir_model.sale_order.x_order_number`
 ```
 Source: [snippets/ir_model.sale_order.x_order_number.xml](https://github.com/Mint-System/Odoo-Build/tree/16.0/snippets/ir_model.sale_order.x_order_number.xml)
 
+### X Partner Ref  
+ID: `mint_system.ir_model.sale_order.x_partner_ref`  
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="x_partner_ref" model="ir.model.fields">
+        <field name="field_description">Kunden Nr.</field>
+        <field name="model">sale.order</field>
+        <field name="model_id" ref="sale.model_sale_order"/>
+        <field name="name">partner_ref</field>
+        <field name="store" eval="True"/>
+        <field name="readonly" eval="False"/>
+        <field name="copied" eval="False"/>
+        <field name="ttype">Char</field>
+        <field name="related">partner_id.ref</field>
+    </record>
+</odoo>
+
+```
+Source: [snippets/ir_model.sale_order.x_partner_ref.xml](https://github.com/Mint-System/Odoo-Build/tree/16.0/snippets/ir_model.sale_order.x_partner_ref.xml)
+
 ### X Payment State  
 ID: `mint_system.ir_model.sale_order.x_payment_state`  
 ```xml
@@ -2930,6 +3031,27 @@ ID: `mint_system.ir_model.stock_move.x_scrap_id`
 Source: [snippets/ir_model.stock_move.x_scrap_id.xml](https://github.com/Mint-System/Odoo-Build/tree/16.0/snippets/ir_model.stock_move.x_scrap_id.xml)
 
 ## Stock Picking  
+### X As4 Import  
+ID: `mint_system.ir_model.stock_picking.x_as4_import`  
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="x_as4_import" model="ir.model.fields">
+        <field name="field_description">AS4 Import</field>
+        <field name="model">stock.picking</field>
+        <field name="model_id" ref="stock.model_stock_picking"/>
+        <field name="name">x_sale_id_as4_import</field>
+        <field name="store" eval="True"/>
+        <field name="readonly" eval="True"/>
+        <field name="copied" eval="False"/>
+        <field name="ttype">boolean</field>
+        <field name="related">sale_id.x_as4import</field>
+    </record>
+</odoo>
+
+```
+Source: [snippets/ir_model.stock_picking.x_as4_import.xml](https://github.com/Mint-System/Odoo-Build/tree/16.0/snippets/ir_model.stock_picking.x_as4_import.xml)
+
 ### X Autocomplete  
 ID: `mint_system.ir_model.stock_picking.x_autocomplete`  
 ```xml

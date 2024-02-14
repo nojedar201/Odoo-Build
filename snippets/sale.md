@@ -1230,8 +1230,9 @@ ID: `mint_system.sale.report_saleorder_document.add_proforma_note`
 ```xml
 <?xml version="1.0"?>
 <data inherit_id="sale.report_saleorder_document" priority="50">
-    <xpath expr="//p[@name='order_note']" position="after">
-        <t t-if="is_pro_forma">
+        <!-- <xpath expr="//p[@name='order_note']" position="after"> -->
+        <xpath expr="//span[@name='order_note']" position="after">
+            <t t-if="is_pro_forma">
             <span>
                 <p>Der Unterzeichner erkl&#xE4;rt, dass die in diesem Dokument aufgef&#xFC;hrten Waren und Ursprungserzeugnisse der Schweiz sind und den Ursprungsregeln im Pr&#xE4;ferenzverkehr mit der EU entsprechen.<br/><br/></p>
                 <p>Unterschrift: _______________________&#xA0;&#xA0;&#xA0;&#xA0;Datum: _______________________<br/>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;Aersolution Interior AG<br/></p>
@@ -4159,6 +4160,19 @@ ID: `mint_system.sale.view_order_form.x_order_number`
 ```
 Source: [snippets/sale.view_order_form.x_order_number.xml](https://github.com/Mint-System/Odoo-Build/tree/16.0/snippets/sale.view_order_form.x_order_number.xml)
 
+### X Partner Ref  
+ID: `mint_system.sale.view_order_form.x_partner_ref`  
+```xml
+<?xml version="1.0"?>
+<data inherit_id="sale.view_order_form" priority="50">
+    <xpath expr="//group[@name='sale_header']//field[@name='partner_id']" position="after">
+        <field name="x_partner_ref"/>
+    </xpath>
+</data>
+
+```
+Source: [snippets/sale.view_order_form.x_partner_ref.xml](https://github.com/Mint-System/Odoo-Build/tree/16.0/snippets/sale.view_order_form.x_partner_ref.xml)
+
 ### X Payment State  
 ID: `mint_system.sale.view_order_form.x_payment_state`  
 ```xml
@@ -4659,6 +4673,19 @@ ID: `mint_system.sale.view_quotation_tree.show_delivery_status`
 
 ```
 Source: [snippets/sale.view_quotation_tree.show_delivery_status.xml](https://github.com/Mint-System/Odoo-Build/tree/16.0/snippets/sale.view_quotation_tree.show_delivery_status.xml)
+
+### Show Order Date  
+ID: `mint_system.sale.view_quotation_tree.show_order_date`  
+```xml
+<?xml version="1.0"?>
+<data inherit_id="sale.view_quotation_tree" priority="50">
+    <xpath expr="//field[@name='create_date']" position="after">
+        <field name="date_order" widget="date" optional="show"/>
+    </xpath>
+</data>
+
+```
+Source: [snippets/sale.view_quotation_tree.show_order_date.xml](https://github.com/Mint-System/Odoo-Build/tree/16.0/snippets/sale.view_quotation_tree.show_order_date.xml)
 
 ### Show ​Payment Term Id  
 ID: `mint_system.sale.view_quotation_tree.show_​payment_term_id`  
