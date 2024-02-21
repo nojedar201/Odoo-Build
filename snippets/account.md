@@ -6578,17 +6578,3 @@ ID: `mint_system.account.view_partner_property_form.show_commercial_partner_id`
 ```
 Source: [snippets/account.view_partner_property_form.show_commercial_partner_id.xml](https://github.com/Mint-System/Odoo-Build/tree/16.0/snippets/account.view_partner_property_form.show_commercial_partner_id.xml)
 
-
-#Test
-## Test snippet
-ID: `mint_system.account_test.timesheet_table`  
-```xml
-<?xml version="1.0"?>
-<data inherit_id="account.test.timesheet_table" priority="50">
-    <xpath expr="//page[@name='accounting']/group[1]" position="before">
-        <field name="commercial_partner_id"/>
-    </xpath>
-</data>
-
-```
-Source: [snippets/account_test.xml](https://github.com/Mint-System/Odoo-Build/tree/16.0/snippets/account_test.xml)
