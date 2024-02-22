@@ -206,27 +206,6 @@ ID: `mint_system.ir_model.account_move.x_bexio_name`
 ```
 Source: [snippets/ir_model.account_move.x_bexio_name.xml](https://github.com/Mint-System/Odoo-Build/tree/16.0/snippets/ir_model.account_move.x_bexio_name.xml)
 
-### X Country Id  
-ID: `mint_system.ir_model.account_move.x_country_id`  
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<odoo>
-    <record id="x_country_id" model="ir.model.fields">
-        <field name="field_description">Land</field>
-        <field name="model">account.move</field>
-        <field name="model_id" ref="account.model_account_move"/>
-        <field name="name">x_country_id</field>
-        <field name="store" eval="True"/>
-        <field name="readonly" eval="True"/>
-        <field name="copied" eval="False"/>
-        <field name="ttype">many2one</field>
-        <field name="relation">partner_id.country_id</field>
-    </record>
-</odoo>
-
-```
-Source: [snippets/ir_model.account_move.x_country_id.xml](https://github.com/Mint-System/Odoo-Build/tree/16.0/snippets/ir_model.account_move.x_country_id.xml)
-
 ### X Date Done  
 ID: `mint_system.ir_model.account_move.x_date_done`  
 ```xml
@@ -2630,27 +2609,6 @@ ID: `mint_system.ir_model.sale_order.x_order_number`
 
 ```
 Source: [snippets/ir_model.sale_order.x_order_number.xml](https://github.com/Mint-System/Odoo-Build/tree/16.0/snippets/ir_model.sale_order.x_order_number.xml)
-
-### X Partner Ref  
-ID: `mint_system.ir_model.sale_order.x_partner_ref`  
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<odoo>
-    <record id="x_partner_ref" model="ir.model.fields">
-        <field name="field_description">Kunden Nr.</field>
-        <field name="model">sale.order</field>
-        <field name="model_id" ref="sale.model_sale_order"/>
-        <field name="name">partner_ref</field>
-        <field name="store" eval="True"/>
-        <field name="readonly" eval="False"/>
-        <field name="copied" eval="False"/>
-        <field name="ttype">Char</field>
-        <field name="related">partner_id.ref</field>
-    </record>
-</odoo>
-
-```
-Source: [snippets/ir_model.sale_order.x_partner_ref.xml](https://github.com/Mint-System/Odoo-Build/tree/16.0/snippets/ir_model.sale_order.x_partner_ref.xml)
 
 ### X Payment State  
 ID: `mint_system.ir_model.sale_order.x_payment_state`  
