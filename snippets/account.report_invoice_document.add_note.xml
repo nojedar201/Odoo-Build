@@ -7,6 +7,13 @@
         <t t-if="not is_html_empty(o.narration)" name="narration">
              <span t-field="o.narration"/>
         </t>
+        <t t-elif="o.company_id.id == 2">
+          <span style="font-weight: bold">Incoterms: DDP / Tax free intracommunity delivery acc. to UstG §6a.</span>
+          <br/>
+          <span>The exporter of the products covered by this document declares that, except where otherwise clearly indicated, these products are of swiss preferential origin.</span>
+          <br/>
+          <span style="font-style: italic">"The total quantity of delivered products is missing from delivery note"</span>
+        </t>
         <t t-elif="o.partner_id.country_id.code == 'CH'">
           <span>The exporter of the products covered by this document declares that, except where otherwise clearly indicated, these products are of swiss preferential origin.</span>
           <br/>
