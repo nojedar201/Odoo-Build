@@ -17,13 +17,13 @@ fi
 
 # Set env vars
 PATH="$PATH:./odoo"
-OS_RELEASE=$(awk -F= '/^NAME/{print $2}' /etc/os-release)
+OS_RELEASE=$(awk -F= '/^NAME/{print $2}' /etc/os-release | tr -d '"')
 GIT_BRANCH=$(git symbolic-ref --short -q HEAD)
 ODOO_REVISION=${ODOO_REVISION:="$GIT_BRANCH"}
 ODOO_LANGUAGE=de_CH
 ODOO_DEVELOPMENT_CONFIG_DIR="$HOME/.config/odoo-build"
 DOCKER_TAG="odoo:$ODOO_REVISION"
-: ${DOCKER_REGISTRY:=""}
+${DOCKER_REGISTRY:=""}
 TARGETARCH=amd64
 
 function set-addons-path() {
@@ -50,7 +50,9 @@ function set-addons-path() {
     # Convert to native paths
     ADDONS_PATH="$(echo $SUBMODULES_PATH | sed 's|,odoo,|,odoo/addons,|g')"
     # Append env var
-    ADDONS_PATH="${ADDONS_PATH}${ODOO_ADDONS_PATH}"
+    if [ -n "$ODOO_ADDONS_PATH" ]; then
+        ADDONS_PATH="${ADDONS_PATH},${ODOO_ADDONS_PATH}"
+    fi
 }
 
 function update-readme() {
@@ -133,7 +135,7 @@ function disable-auto-install() {
 
 function build() {
     echo "Run Docker build with tag ${DOCKER_REGISTRY}${DOCKER_TAG}"
-    docker build . --build-arg TARGETARCH="$TARGETARCH" -t "${DOCKER_REGISTRY}${DOCKER_TAG}"
+    docker build . --build-arg TARGETARCH="$TARGETARCH" --build-arg ODOO_IMAGE="${DOCKER_REGISTRY}${DOCKER_TAG}" -t "${DOCKER_REGISTRY}${DOCKER_TAG}"
 }
 
 function install-odoo-scripts() {
@@ -144,7 +146,7 @@ function install-native() {
     init-venv
     activate-venv
     
-    if [[ "Ubuntu|Debian" =~ $OS_RELEASE ]]; then
+    if [[ "$OS_RELEASE" =~ ^(Ubuntu|Debian|Pop!_OS)$ ]]; then
 
         # Source: https://gist.github.com/faniska/37f896d5e9de5fee925925d7caf3cb9e
         echo "Install wkhtmltopdf"
@@ -166,26 +168,20 @@ function install-native() {
     pip install --upgrade --pre pylint-odoo
 
     echo "Install odoo dependencies"
-    pip install setuptools wheel watchdog phonenumbers
+    pip install setuptools wheel watchdog phonenumbers astor
     pip install -r odoo/requirements.txt
 
-    echo "Install oca dev tools"
-    pip install pre-commit pyyaml rst2html5 odoorpc
+    echo "Install OCA development tools"
+    pip install pre-commit pyyaml rst2html5 odoorpc coverage
 
-    echo "Install graphql dependencies"
-    pip install graphene graphql-server-core
-
-    echo "Install rest dependencies"
-    pip install cerberus pyquerystring parse-accept-language apispec\>=4.0.0 marshmallow marshmallow-objects\>=2.0.0 jsondiff
-
-    echo "Install openupgrade functions"
+    echo "Install OCA openupgrade tools"
     pip install git+https://github.com/OCA/openupgradelib.git@master#egg=openupgradelib
 
-    echo "Install addon dependencies"
-    pip install prometheus_client pika
-    
-    echo "Install edi dependencies"
-    pip install pyzbar numpy pdf2image opencv-python
+    echo "Install module dependencies: prometheus_exporter"
+    pip install prometheus-client
+
+    echo "Install module dependencies: base_view_inheritance_extension"
+    pip install astor
 }
 
 function open-url-with-delay(){
@@ -210,13 +206,13 @@ function start() {
     fi
 
     if test -z "$1"; then
+        echo "Start odoo container ${DOCKER_REGISTRY}${DOCKER_TAG}"
         echo "Open http://localhost:8069 url in your browser."
         docker-compose up -d
     fi
 
     if [[ "$1" =~ "db" ]]; then
         docker-compose up -d db
-        echo "Open http://localhost:8000 url in your browser."
     fi
 
     if [[ "$1" =~ "admin" ]]; then
@@ -225,6 +221,7 @@ function start() {
     fi
 
     if [[ "$1" =~ "odoo" ]]; then
+        echo "Start odoo container ${DOCKER_REGISTRY}${DOCKER_TAG}"
         docker-compose up -d odoo
         echo "Open http://localhost:8069 url in your browser."
     fi
@@ -232,7 +229,7 @@ function start() {
     if [[ "$1" =~ "native" ]]; then
         activate-venv
         echo "Open http://localhost:8069 url in your browser."
-        open-url-with-delay "http://localhost:8069/web?db=$DATABASE" & 
+        open-url-with-delay "http://localhost:8069/web?debug=1&db=$DATABASE" & 
         odoo-bin --config "config/odoo.conf" --addons-path="$ADDONS_PATH" --dev=all --log-handler odoo.tools.convert:DEBUG
     fi
 
@@ -247,6 +244,18 @@ function start() {
 function down() {
     if test -z "$1"; then
         docker-compose down -v
+    fi
+
+    if [[ "$1" =~ "db" ]]; then
+        docker-compose rm -f -s -v db
+    fi
+
+    if [[ "$1" =~ "admin" ]]; then
+        docker-compose rm -f -s -v admin
+    fi
+    
+    if [[ "$1" =~ "odoo" ]]; then
+        docker-compose rm -f -s -v odoo
     fi
 
     if [[ "$1" =~ "mail" ]]; then
@@ -344,7 +353,7 @@ function update-module() {
     odoo-bin -d "$DATABASE" -u "$MODULE_NAME" --config 'config/odoo.conf' --addons-path="$ADDONS_PATH" --stop-after-init --no-http
 }
 
-function generate-module-translation() {
+function translate-module() {
     if test -z "$1"; then echo "\$1 is empty."; exit; fi
 
     DATABASE="$1"
@@ -406,7 +415,23 @@ function test-module() {
     activate-venv
     set-addons-path
     echo "Testing module $MODULE_NAME on $DATABASE ..."
-    odoo-bin -d "$DATABASE" -i "$MODULE_NAME" --config 'config/odoo.conf' --addons-path="$ADDONS_PATH" --stop-after-init --test-tags /"$MODULE_NAME"
+    odoo-bin -d "$DATABASE" -i "$MODULE_NAME" --config 'config/odoo.conf' --addons-path="$ADDONS_PATH" --stop-after-init --no-http --test-tags /"$MODULE_NAME"
+}
+
+function test-coverage-module() {
+    DATABASE="$1"
+    MODULE_NAME=$(basename "$2")
+
+    # Use default database if second param is not given 
+    if test -z "$2"; then
+        DATABASE="$GIT_BRANCH"
+        MODULE_NAME=$(basename "$1")
+    fi
+
+    activate-venv
+    set-addons-path
+    echo "Testing module $MODULE_NAME on $DATABASE ..."
+    coverage run odoo-bin -d "$DATABASE" -i "$MODULE_NAME" --config 'config/odoo.conf' --addons-path="$ADDONS_PATH" --stop-after-init --test-tags /"$MODULE_NAME"
 }
 
 function remove-module() {
@@ -493,21 +518,24 @@ function convert-database() {
     echo "Converted database file $1 to ${1}2"
 }
 
-function git-update-submodules() {
-    echo "Update submodules."
+function git-submodule-update() {
+    echo "Update git submodules."
     SUBMODULES=$(git config --file .gitmodules --get-regexp url | sed -e 's/submodule.//g' -e 's/.url.*//g')
     for SUBMODULE in $SUBMODULES; do
+        # The init flag is required for the inital checkout
+        # The --depth flag cannot be used when working on multiple branches
+        echo "Update git submodule: $SUBMODULE"
         git submodule update --init "$SUBMODULE"
     done
 }
 
-function git-switch-branch() {
+function git-submodule-switch() {
     if test -z "$1"; then echo "\$1 is empty."; exit; fi
 
-    echo "Switch branch on submodules."
+    echo "Switch branch on git submodules."
     SUBMODULES=$(git config --file .gitmodules --get-regexp url | sed -e 's/submodule.//g' -e 's/.url.*//g')
     for SUBMODULE in $SUBMODULES; do
-        echo "Switch branch to $1 in $SUBMODULE."
+        echo "Switch git submodule branch to $1: $SUBMODULE"
         CWD=$(pwd)
         cd "$SUBMODULE" || exit
         git stash
@@ -520,13 +548,13 @@ function checkout-config-files() {
     if test -z "$1"; then echo "\$1 is empty."; exit; fi
 
     echo "Checkout config files $1 branch."
-    git checkout "$1" config/checkout_files config/reset_files
+    git checkout "$1" config/checkout-files config/reset-files
 
     echo "Remove reset files."
-    git rm -r $(tr '\n' ' ' < ./config/reset_files) >/dev/null 2>&1
+    git rm -r $(tr '\n' ' ' < ./config/reset-files) >/dev/null 2>&1
 
     echo "Sync checkout files from $1 branch."
-    git checkout "$1" $(tr '\n' ' ' < ./config/checkout_files)
+    git checkout "$1" $(tr '\n' ' ' < ./config/checkout-files)
 }
 
 function checkout() {
@@ -538,11 +566,9 @@ function checkout() {
     echo "Switch branch."
     git switch "$1"
 
-    git-update-submodules
+    git-submodule-update
 
-    git-switch-branch "$1"
-
-    checkout-config-files "$GIT_BRANCH"
+    git-submodule-switch "$1"
 }
 
 function checkout-revision() {
@@ -558,10 +584,11 @@ function checkout-revision() {
     git checkout "$1"
 }
 
-function git-pull-submodules() {
-    # Pull submodule if update config is not set
+function git-submodule-pull() {
+    echo "Pull git submodules"
     SUBMODULES=$(git config --file .gitmodules --get-regexp url | sed -e 's/submodule.//g' -e 's/.url.*//g')
     for SUBMODULE in $SUBMODULES; do
+        echo "Pull git submodule: $SUBMODULE"
         UPDATE=$(git config submodule."$SUBMODULE".update)
         CWD=$(pwd)
         cd "$SUBMODULE" || exit
@@ -775,7 +802,7 @@ function init-odoo-env() {
     echo "ODOO_PASSWORD=" >> "$ENV_FILEPATH"
 }
 
-function init-next-env() {
+function init-nextcloud-env() {
     if test -z "$1"; then echo "\$1 is empty."; exit; fi
 
     init-config-dir
@@ -836,7 +863,14 @@ function save-config() {
     odoo-bin -s -d "$1" --config 'config/odoo.conf' --stop-after-init --no-http
 }
 
-function remove-submodule() {
+function git-submodule-add() {
+    if test -z "$1"; then echo "\$1 is empty."; exit; fi
+    if test -z "$2"; then echo "\$2 is empty."; exit; fi
+
+    git submodule add -f -b "$GIT_BRANCH" "$1" "$2"
+}
+
+function git-submodule-remove() {
     if test -z "$1"; then echo "\$1 is empty."; exit; fi
 
     echo "Deinit submodule"
@@ -853,9 +887,9 @@ function remove-submodule() {
     rm -rf .git/modules/"$1"
 }
 
-function git-list-submodules() {
-
-    git config --file .gitmodules --get-regexp url | sed -e 's/submodule.//g' -e 's/.url//g' | awk '{ print $1 "," $2}'
+function git-submodule-list() {
+    git submodule foreach --quiet 'printf "%-30s %-20s\n" "$name" "$(git rev-parse --abbrev-ref HEAD)"'
+    # git config --file .gitmodules --get-regexp url | sed -e 's/submodule.//g' -e 's/.url//g' | awk '{ print $1 "," $2}'
 }
 
 function git-feature-branch(){
@@ -1027,6 +1061,9 @@ case "$1" in
     test-module)
         test-module "$2" "$3"
         ;;
+    test-coverage-module)
+        test-coverage-module "$2" "$3"
+        ;;
     create-module)
         create-module "$2"
         ;;
@@ -1057,11 +1094,14 @@ case "$1" in
     remove-module)
         remove-module "$2" "$3"
         ;;
-    remove-submodule)
-        remove-submodule "$2"
+    git-submodule-remove)
+        git-submodule-remove "$2"
         ;;
-    git-update-submodules)
-        git-update-submodules
+    git-submodule-add)
+        git-submodule-add "$2" "$3"
+        ;;
+    git-submodule-update)
+        git-submodule-update
         ;;
     release-module)
         release-module "$2"
@@ -1081,7 +1121,7 @@ case "$1" in
     init-odoo-env)
         init-odoo-env "$2"
         ;;
-    list-odoo-env)
+    list-env)
         ls -f "$ODOO_DEVELOPMENT_CONFIG_DIR"
         ;;
     list-addons)
@@ -1099,11 +1139,11 @@ case "$1" in
     set-admin)
         set-admin "$2"
         ;;
-    git-switch-branch)
-        git-switch-branch "$2"
+    git-submodule-switch)
+        git-submodule-switch "$2"
         ;;
-    git-list-submodules)
-        git-list-submodules
+    git-submodule-list)
+        git-submodule-list
         ;;
     get-module-version)
         get-module-version "$2"
@@ -1129,20 +1169,20 @@ case "$1" in
     update-app-list)
         update-app-list "$2"
         ;;
-    init-next-env)
-        init-next-env "$2"
+    init-nextcloud-env)
+        init-nextcloud-env "$2"
         ;;
     upload-module)
         upload-module "$2" "$3"
         ;;
-    generate-module-translation)
-        generate-module-translation "$2" "$3" "$4"
+    translate-module)
+        translate-module "$2" "$3" "$4"
         ;;
     patch-database)
         patch-database "$2" "$3"
         ;;
-    git-pull-submodules)
-        git-pull-submodules
+    git-submodule-pull)
+        git-submodule-pull
         ;;
     update-docs)
         update-docs

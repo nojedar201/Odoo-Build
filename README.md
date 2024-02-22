@@ -50,7 +50,7 @@ task checkout 16.0
 task checkout 17.0
 ```
 
-Install [Odoo scripts](https://ansible.build/roles/odoo-scripts/)
+Install [Odoo scripts](https://ansible.build/roles/odoo_scripts/)
 
 ```bash
 task install-odoo-scripts
@@ -103,8 +103,8 @@ task create-module addons/project_report
 
 To load modules from a thirdparty folder, set this env var in your `.env` file
 
-```
-ODOO_ADDONS_PATH=,thirdparty/modules/,../other/modules
+```bash
+ODOO_ADDONS_PATH=thirdparty/odoo-apps-partner-contact,../odoo-cd/untracked-odoo-apps
 ```
 
 The paths will be appended to the Odoo config.
@@ -121,10 +121,12 @@ Run docker compose.
 task start
 ```
 
-Initialize database.
+Initialize database. The parameter `-d` specifies the name of the parameter and is mandatory.
+
+Use `docker-odoo-install help` to show all options.
 
 ```bash
-docker-odoo-install
+docker-odoo-install -d mydatabase
 ```
 
 Open browser to [http://localhost:8069](http://localhost:8069) and login with `admin:admin`.
@@ -171,7 +173,7 @@ task drop-db
 
 To build the Docker image setup these `.env` vars:
 
-```
+```bash
 ODOO_REVISION=16.5
 DOCKER_REGISTRY=mint-system/
 ```
@@ -188,66 +190,31 @@ Publish the Odoo image.
 task publish
 ```
 
-## Mail
-
-### Setup mail server and client
+### Mail
 
 Start mail server.
 
-```
+```bash
 task start mail
 ```
 
-Create a new account `odoo@example.com` and set `odoo` as password.\
-Create a new account `test@example.com` and set `test` as password.
+Register an outgoing mail server with these informations:
 
-Install a simple mail client such as [Claws Mail](https://www.claws-mail.org/) and connect with credentials:
-
+name: `Mailhog`
 host: `localhost`\
-port: `25`\
-username: `odoo@example.com`\
-password: `test`
-
-For incoming mails use these informations:
-
-server type: `IMAP`
-host: `localhost`\
-port: `143`\
-username: `odoo@example.com`\
-password: `test`
-
-Repeat the same for `test@example.com`.
-
-### Setup incoming and outgoing mail for Odoo
-
-Activate mail sever option with `example.com` domain.
-
-For outgoing mails use these informations:
-
-host: `localhost`\
-port: `25`\
-username: `odoo@example.com`\
-password: `odoo`
-
-For incoming mails use these informations:
-
-server type: `IMAP`
-host: `localhost`\
-port: `143`\
-username: `odoo@example.com`\
-password: `odoo`
-
-### Test mail exchange
-
-Follow these steps to test a mail exchange:
-
-* Send mail in Odoo to `test@example.com`
-* In mail client create reply to the mail and save as draft
-* Copy the mail to the inbox of `odoo@example.com`
-* Trigger fetchmail in Odoo
-* Check if reply has been processed
+port: `1'025`
 
 ## Troubleshooting
+
+### Remove tracked submodule folders
+
+**Problem**
+
+The checkout command fails tue to unregistered submdoules.
+
+**Solution**
+
+Remove the submodule with `git rm`, f.e. `git rm oca/dms`.
 
 ### inotify instance limit reached 
 
