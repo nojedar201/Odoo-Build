@@ -151,11 +151,13 @@ function install-native() {
         # Source: https://gist.github.com/faniska/37f896d5e9de5fee925925d7caf3cb9e
         echo "Install wkhtmltopdf"
         sudo apt remove wkhtmltopdf
-        cd ~ || exit
         wget https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.4/wkhtmltox-0.12.4_linux-generic-amd64.tar.xz
         tar xvf wkhtmltox*.tar.xz
         sudo mv wkhtmltox/bin/wkhtmlto* /usr/bin
-        sudo apt-get install -y openssl build-essential libssl-dev libxrender-dev git-core libx11-dev libxext-dev libfontconfig1-dev libfreetype6-dev fontconfig
+        rm -rf wkhtmltox wkhtmltox-0.12.4_linux-generic-amd64.tar.*
+
+        echo "Install python-ldap and psycopg2 build dependencies"
+        sudo apt-get install -y libsasl2-dev python-dev libldap2-dev libssl-dev
 
         echo "Install xmllint"
         sudo apt install libxml2-utils
@@ -164,23 +166,22 @@ function install-native() {
         echo "The operating system $OS_RELEASE is not supported."
     fi
 
-    echo "Install pylint odoo"
-    pip install --upgrade --pre pylint-odoo
+    echo "Install Odoo development tools"
+    pip install setuptools wheel inotify watchdog
 
-    echo "Install odoo dependencies"
-    pip install setuptools wheel watchdog phonenumbers astor
+    echo "Install Odoo dependencies"
     pip install -r odoo/requirements.txt
 
     echo "Install OCA development tools"
-    pip install pre-commit pyyaml rst2html5 odoorpc coverage
+    pip install pre-commit pyyaml docutils rst2html5 odoorpc coverage pylint-odoo
 
     echo "Install OCA openupgrade tools"
     pip install git+https://github.com/OCA/openupgradelib.git@master#egg=openupgradelib
 
-    echo "Install module dependencies: prometheus_exporter"
+    echo "Install prometheus_exporter dependency"
     pip install prometheus-client
 
-    echo "Install module dependencies: base_view_inheritance_extension"
+    echo "Install base_view_inheritance_extension dependency"
     pip install astor
 }
 
@@ -229,8 +230,8 @@ function start() {
     if [[ "$1" =~ "native" ]]; then
         activate-venv
         echo "Open http://localhost:8069 url in your browser."
-        open-url-with-delay "http://localhost:8069/web?debug=1&db=$DATABASE" & 
-        odoo-bin --config "config/odoo.conf" --addons-path="$ADDONS_PATH" --dev=all --log-handler odoo.tools.convert:DEBUG
+        open-url-with-delay "http://localhost:8069/web?debug=1&db=$DATABASE" &
+        odoo-bin -d "$DATABASE" --config "config/odoo.conf" --addons-path="$ADDONS_PATH" --dev=all --log-handler odoo.tools.convert:DEBUG
     fi
 
     if [[ "$1" =~ "mail" ]]; then
@@ -857,10 +858,11 @@ function upload-module() {
 }
 
 function save-config() {
-    if test -z "$1"; then echo "\$1 is empty."; exit; fi
+    DATABASE="$1"
+    DATABASE=${DATABASE:="$GIT_BRANCH"}
 
     activate-venv
-    odoo-bin -s -d "$1" --config 'config/odoo.conf' --stop-after-init --no-http
+    odoo-bin -d "$DATABASE" -s --config 'config/odoo.conf' --stop-after-init --no-http
 }
 
 function git-submodule-add() {
