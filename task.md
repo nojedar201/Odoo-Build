@@ -11,8 +11,10 @@
 | clear-filestore       | [db]              | Clear local filestore folder. No param will clear all filestores. Default is branch name. |
 | convert-database      | [db]              | Convert database backup file from postgres 9.5 to latest. Default is branch name.         |
 | create-module         | [path]            | Create new Odoo module from template.                                                     |
+| deploy                | [name]            | Deploy to Kubernets cluster. Options: db, admin, odoo, mail.                              |
 | disable-auto-install  |                   | Disable auto install for enterprise modules.                                              |
 | disable-mailserver    | [env]             | Disable mail server settings via xmlrpc.                                                  |
+| docker-login          |                   | Setup Docker Hub login credentials.                                                       |
 | drop-db               | [db]              | Drop target Odoo database. Default is branch name.                                        |
 | edit-env              | [env]             | Open env file in default editor.                                                          |
 | generate-admin-passwd | [pass]            | Generate hash for Odoo master password.                                                   |
@@ -26,6 +28,7 @@
 | git-submodule-remove  | [path]            | Remove git submodule.                                                                     |
 | git-submodule-switch  | [branch]          | Switch branch for all submodules.                                                         |
 | git-submodule-update  |                   | Update submodules from .gitmodules file.                                                  |
+| info                  |                   | Show values of project env vars.                                                          |
 | init-db               | [db]              | Initialize the Odoo database. Default is branch name.                                     |
 | init-nextcloud-env    | [env]             | Create env file for Nextcloud instance.                                                   |
 | init-odoo-env         | [env]             | Create env file for Odoo Instance.                                                        |
@@ -34,7 +37,7 @@
 | install-native        |                   | Install Odoo requirements in source folder.                                               |
 | install-odoo-scripts  |                   | Install Odoo scripts.                                                                     |
 | install-snippet       | [env][path]       | Install snippet xml definition.                                                           |
-| kill                  | [name]            | Remove docker containers and volumes. Options: none, db, admin, odoo, mail.               |
+| down                  | [name]            | Remove docker containers and volumes. Options: none, db, admin, odoo, mail.               |
 | lint-module           | [path]            | Run pylint odoo for module.                                                               |
 | lint-snippets         |                   | Run checks for all snippets.                                                              |
 | list                  |                   | List Docker containers.                                                                   |
@@ -43,6 +46,7 @@
 | logs                  |                   | Tail Odoo Docker container logs.                                                          |
 | odoo-cloc             | [db]              | Count custom line of codes. Default is branch name.                                       |
 | patch-database        | [db][path]        | Apply sql file to database. Default database is branch name.                              |
+| publish               |                   | Publish Odoo Docker image.                                                                |
 | ps                    |                   | List docker processes.                                                                    |
 | release-module        | [path]            | Create GitHub release for a module.                                                       |
 | remove-module         | [db][name]        | Remove target Odoo module.                                                                |
@@ -56,7 +60,6 @@
 | start-psql            | [db]              | Start PSQL shell in Docker container. Default is branch name.                             |
 | start-shell           | [db]              | Start Odoo shell from source folder. Default is branch name.                              |
 | stop                  | [name]            | Stop docker containers.                                                                   |
-| test-coverage-module  | [db][name,path]   | Generate test coverage report for target Odoo module.                                     |
 | test-jsonrpc          | [env]             | Test json rpc connection.                                                                 |
 | test-module           | [db][name,path]   | Test target Odoo module.                                                                  |
 | update-app-list       | [db]              | Update app list.                                                                          |
