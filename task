@@ -22,7 +22,7 @@ function help-table() {
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "clear-filestore" "[db]" "Clear local filestore folder. No param will clear all filestores. Default is branch name."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "convert-database" "[db]" "Convert database backup file from PostgreSQL 9.5 to latest. Default is branch name."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "create-module" "[path]" "Create new Odoo module from template."
-    printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "deploy" "[name]" "Deploy to Kubernetes cluster. Options: db, admin, odoo, mail."
+    printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "create-revision" "[revision]" "Create new Odoo revision."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "disable-auto-install" "" "Disable auto install for enterprise modules."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "disable-mailserver" "[env]" "Disable mail server settings via xmlrpc."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "docker-login" "" "Setup Docker Hub login credentials."
@@ -32,7 +32,8 @@ function help-table() {
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "translate-module" "[env][path][lang]" "Generate translation for Odoo module."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "generate-help-doc" "" "Write help table to task.md file."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "generate-module-security" "[path][model]" "Generate model access file for a selected model of a module."
-    printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "get-addons-path" "" "Finds modules in addons folder."
+    printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "generate-module-model" "[path][model]" "Generate model files from module template."
+    printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "get-addons-path" "" "Find nested modules and return addons path."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "get-module-version" "[path]" "Get module version from manifest."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "git-feature-branch" "[path]" "Create feature branch for Odoo module."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "git-mig-branch" "[path]" "Create migration branch for Odoo module."
@@ -46,6 +47,7 @@ function help-table() {
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "import-csv" "[db][path]" "Import data from csv. Filename must match PostgreSQL table name."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "info" "" "Show values of project env vars."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "init-db" "[db]" "Initialize the Odoo database. Default is branch name."
+    printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "init-minikube" "" "Deploy the Odoo K8s manifests."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "init-nextcloud-env" "[env]" "Create env file for Nextcloud instance."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "init-odoo-env" "[env]" "Create env file for Odoo Instance."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "init-venv" "" "Initialize python virtual env."
@@ -57,8 +59,7 @@ function help-table() {
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "install-snippet" "[env][path]" "Install snippet xml definition."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "lint-module" "[path]" "Run pylint odoo for module."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "lint-snippets" "" "Run checks for all snippets."
-    printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "list" "" "List Docker containers."
-    printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "list-addons" "" "List Odoo addons."
+    printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "list-modules" "" "List Odoo modules."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "list-env" "" "List env files."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "list-revision" "" "List available Odoo revisions."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "logs" "" "Tail Odoo Docker container logs."
@@ -81,6 +82,7 @@ function help-table() {
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "set-admin" "[db]" "Sets the password for the first user in database. Default is branch name."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "source" "" "Source the Python virtual env."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "start" "[name][db]" "Start docker container. Options: none, db, admin, odoo, native, mail."
+    printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "start-minikube" "" "Start minikube Kubernetes cluster."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "start-psql" "[db]" "Start PSQL shell in Docker container. Default is branch name."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "start-shell" "[db]" "Start Odoo shell from source folder. Default is branch name."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "stop" "[name]" "Stop docker containers."
@@ -169,6 +171,8 @@ function version() {
     psql -V
     docker -v
     docker-compose -v
+    minikube version    
+    kubectl version
 }
 
 function set-addons-path() {
@@ -210,23 +214,38 @@ function get-addons-path() {
     echo "$ADDONS_PATH"
 }
 
+function list-env() {
+    ls -f "$ODOO_DEVELOPMENT_CONFIG_DIR"
+}
+
+function list-modules() {
+    set-addons-path
+    echo "$ADDONS_PATH" | tr "," "\n" | xargs -I {} find {} -type f -name "__manifest__.py" | xargs grep -l "version.*${GIT_BRANCH}" | xargs -r dirname | xargs -r -I {} basename {} | sort -u
+}
+
 function update-readme() {
     if test -z "$1"; then echo "\$1 is empty."; exit; fi
-    FILE_NAME=$(basename "$1")
-    if [[ "$FILE_NAME" != "README.md" ]]; then echo "\$1 must point to README.md file."; exit; fi
-    MODULES_DIR=$(dirname "$1")
+    README_PATH="$1"
+    FILE_NAME=$(basename "$README_PATH")
+
+    if [[ "$FILE_NAME" != "README.md" ]]; then
+        README_PATH="$1/README.md"
+        FILE_NAME="README.md"
+    fi
+
+    REPO_PATH=$(dirname "$README_PATH")
     
-    MANIFEST_FILES="$MODULES_DIR/*/__manifest__.py"
+    MANIFEST_FILES="$REPO_PATH/*/__manifest__.py"
 
     # Find marker in readme and clear content after
-    echo "Clear modules table for $1."
+    echo "Clear modules table for $README_PATH."
     MARKER="## Available modules"
-    sed -i "/$MARKER/Q" "$1"
+    sed -i "/$MARKER/Q" "$README_PATH"
 
-    echo "$MARKER" >> "$1"
-    echo "" >> "$1"
-    echo "| Module | Summary |" >> "$1"
-    echo "| --- | --- |" >> "$1"
+    echo "$MARKER" >> "$README_PATH"
+    echo "" >> "$README_PATH"
+    echo "| Module | Summary |" >> "$README_PATH"
+    echo "| --- | --- |" >> "$README_PATH"
 
     # Clear table after a marker
     for MANIFEST_FILE in $MANIFEST_FILES; do
@@ -234,7 +253,7 @@ function update-readme() {
         MODULE_NAME=$(basename "$MODULE_DIR")
         echo "Add summary of $MODULE_NAME to readme file."
         SUMMARY=$(grep 'summary' "$MANIFEST_FILE" -A 1 | tail -1)
-        echo "| [$MODULE_NAME]($MODULE_NAME) | $SUMMARY |" >> "$1"
+        echo "| [$MODULE_NAME]($MODULE_NAME) | $SUMMARY |" >> "$README_PATH"
     done
 }
 
@@ -443,6 +462,11 @@ function start() {
     fi
 }
 
+function start-minikube() {
+    echo "Start minikube."
+    minikube start
+}
+
 function deploy() {
     if [[ "$1" =~ "db" ]]; then
         kubectl apply -f k3s/postgres.yml
@@ -524,6 +548,26 @@ function start-psql() {
     fi
 
     docker exec -it db psql "postgres://odoo:odoo@localhost:5432/$DATABASE"
+}
+
+function init-minikube() {
+    echo "Deploy Postgres:"
+    kubectl apply -f k8s/postgres-cm.yaml
+    kubectl apply -f k8s/postgres-pvc.yaml
+    kubectl apply -f k8s/postgres-deploy.yaml
+    kubectl apply -f k8s/postgres-svc.yaml
+
+    echo "Deploy Odoo:"
+    kubectl apply -f k8s/odoo-cm.yaml
+    kubectl apply -f k8s/odoo17-deploy.yaml
+    kubectl apply -f k8s/odoo-svc.yaml
+
+    echo "Init Odoo database:"
+    ODOO_POD=$(kubectl get pods -o=name --all-namespaces | grep odoo)
+    kubectl exec "$ODOO_POD" -- env
+    kubectl exec "$ODOO_POD" -- /bin/bash -c "odoo -d odoo -i web --db_host \$HOST -r\$USER -w\$PASSWORD --stop-after-init --no-http"
+
+    echo "Access Odoo with: $(minikube service odoo --url)"
 }
 
 function init-db() {
@@ -615,12 +659,6 @@ function translate-module() {
     echo "Generate $LANGUAGE tranlsation file for $MODULE_NAME on $DATABASE ..."
     mkdir -p "$MODULE_PATH/i18n/"
     odoo -d "$DATABASE" --config "config/odoo.conf" --addons-path="$ADDONS_PATH" --modules "$MODULE_NAME" -l "$LANGUAGE" --i18n-export "$MODULE_PATH/i18n/$LANGUAGE.po"
-}
-
-function list-addons() {
-    activate-venv
-    set-addons-path
-    echo "$ADDONS_PATH"
 }
 
 function import-csv() {
@@ -763,7 +801,7 @@ function create-module() {
 
     activate-venv
     echo "Scaffolding module $MODULE_NAME in $PARENT_DIR ..."
-    odoo scaffold "$MODULE_NAME" "$PARENT_DIR" -t template/module
+    odoo scaffold "$MODULE_NAME" "$PARENT_DIR" -t templates/module
 }
 
 function generate-module-security() {
@@ -964,6 +1002,42 @@ function checkout-revision() {
         echo "Execute script for revision: $ODOO_REVISION"
         ./scripts/odoo_revision_"${ODOO_REVISION}"
     fi
+}
+
+function create-revision() {
+    if test -z "$1"; then echo "\$1 is empty."; exit; fi
+
+    REVISION="$1" # 16.0.20241029
+    ODOO_VERSION=$(echo "$REVISION" | cut -d'.' -f1-2)
+    ODOO_DATE=$(echo "$REVISION" | cut -d'.' -f3-)
+    BEFORE_DATE=$(date -d "$ODOO_DATE -1 day" +"%Y-%m-%d")
+    
+    # Pull Docker image with revision
+    IMAGE=odoo:"$ODOO_VERSION-$ODOO_DATE"
+    docker pull "$IMAGE"
+    DOCKER_REF=$(docker inspect --format='{{index .RepoDigests 0}}' "$IMAGE")
+
+    # Get git commit by date
+    cd odoo
+    ODOO_REF=$(git rev-list -n 1 --before="$BEFORE_DATE" origin/$ODOO_VERSION)
+    git checkout "$ODOO_REF"
+    cd ..
+    cd enterprise
+    ENTERPRISE_REF=$(git rev-list -n 1 --before="$BEFORE_DATE" origin/$ODOO_VERSION)
+    git checkout "$ENTERPRISE_REF"
+    cd ..
+    cd themes
+    THEME_REF=$(git rev-list -n 1 --before="$BEFORE_DATE" origin/$ODOO_VERSION)
+    git checkout "$THEME_REF"
+    cd ..
+
+    echo "Create revision: $REVISION"
+    export REVISION ODOO_REF ENTERPRISE_REF THEME_REF DOCKER_REF
+    envsubst '$REVISION $ODOO_REF $ENTERPRISE_REF $THEME_REF $DOCKER_REF' < templates/odoo_revision > scripts/odoo_revision_"$REVISION"
+    chmod +x scripts/odoo_revision_"$REVISION"
+
+    echo "Checkout revision: $REVISION"
+    checkout-revision "$REVISION"
 }
 
 function git-submodule-pull() {
@@ -1486,8 +1560,8 @@ case "$1" in
     create-module)
         create-module "$2"
         ;;
-    deploy)
-        deploy "$2"
+    create-revision)
+        create-revision "$2"
         ;;
     disable-auto-install)
         disable-auto-install
@@ -1565,6 +1639,9 @@ case "$1" in
     init-db)
         init-db "$2"
         ;;
+    init-minikube)
+        init-minikube
+        ;;
     init-nextcloud-env)
         init-nextcloud-env "$2"
         ;;
@@ -1607,14 +1684,11 @@ case "$1" in
     lint-snippets)
         lint-snippets
         ;;
-    list-addons)
-        list-addons
-        ;;
     list-env)
-        ls -f "$ODOO_DEVELOPMENT_CONFIG_DIR"
+        list-env
         ;;
-    list)
-        docker-compose config --services; echo "native"
+    list-modules)
+        list-modules
         ;;
     logs)
         docker logs odoo -f
@@ -1670,6 +1744,9 @@ case "$1" in
         ;;
     source)
         activate-venv
+        ;;
+    start-minikube)
+        start-minikube
         ;;
     start-psql)
         start-psql "$2"
