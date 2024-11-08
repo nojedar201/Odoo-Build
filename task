@@ -32,7 +32,7 @@ function help-table() {
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "translate-module" "[env][path][lang]" "Generate translation for Odoo module."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "generate-help-doc" "" "Write help table to task.md file."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "generate-module-security" "[path][model]" "Generate model access file for a selected model of a module."
-    printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "generate-module-model" "[path][model]" "Generate model files from module template."
+    printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "generate-module-model" "[path][model]" "Generate model files from templates."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "get-addons-path" "" "Find nested modules and return addons path."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "get-module-version" "[path]" "Get module version from manifest."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "git-feature-branch" "[path]" "Create feature branch for Odoo module."
@@ -825,6 +825,30 @@ function generate-module-security() {
     echo "access_${MODEL_NAME}_manager,$MODULE_NAME.$MODEL_DOT_NAME,model_${MODEL_NAME},base.group_erp_manager,1,1,1,1" >> "$ACCESS_FILE"
 }
 
+function generate-module-model() {
+    if test -z "$1"; then echo "\$1 is empty."; exit; fi
+    if test -z "$2"; then echo "\$2 is empty."; exit; fi
+
+    MODULE_PATH="$1"
+    MODULE_NAME=$(basename "$1")
+    NAME=
+    MODEL_DOT_NAME="$2"
+    MODEL_NAME=$(echo "$MODEL_DOT_NAME" | tr '.' '_')
+    MODEL_DESCRIPTION=$(echo "$MODEL_DOT_NAME" | tr '.' ' ') # Make first letter capital 
+    MODEL_CAMEL_NAME=$(echo "$MODEL_DESCRIPTION" | sed 's/ //g')
+
+    export NAME MODULE_NAME MODEL_DOT_NAME MODEL_NAME MODEL_DESCRIPTION MODEL_CAMEL_NAME
+    
+    echo "Substitute model template"
+    envsubst '$NAME $MODULE_NAME $MODEL_DOT_NAME $MODEL_NAME $MODEL_DESCRIPTION $MODEL_CAMEL_NAME' < templates/model.py > "$MODULE_PATH/models/$MODEL_NAME.py"
+    echo "from . import $MODEL_NAME" >> "$MODULE_PATH/models/__init__.py"
+
+    echo "Substitute view template"
+    envsubst '$NAME $MODULE_NAME $MODEL_DOT_NAME $MODEL_NAME $MODEL_DESCRIPTION $MODEL_CAMEL_NAME' < templates/model_views.xml > "$MODULE_PATH/views/${MODEL_NAME}_views.xml"
+    echo "Update file $MODULE_NAME/__manifest__.py with:"
+    echo -e "\t, \"views/${MODEL_NAME}_views.xml\""
+}
+
 function drop-db() {
     DATABASE="$1"
     if [ -z "$DATABASE" ]; then
@@ -1586,6 +1610,9 @@ case "$1" in
         ;;
     generate-help-doc)
         generate-help-doc
+        ;;
+    generate-module-model)
+        generate-module-model "$2" "$3"
         ;;
     generate-module-security)
         generate-module-security "$2" "$3"

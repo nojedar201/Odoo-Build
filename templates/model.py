@@ -5,9 +5,9 @@ from odoo import _, api, fields, models
 _logger = logging.getLogger(__name__)
 
 
-class {{ (name|replace('_',' ')).title() }}(models.Model):
-    _name = '{{ name }}'
-    _description = '{{ (name|replace('_',' ')).title() }}'
+class ${MODEL_CAMEL_NAME}(models.Model):
+    _name = "$MODEL_DOT_NAME"
+    _description = "$MODEL_DESCRIPTION"
 
     name = fields.Char()
     value = fields.Integer()
