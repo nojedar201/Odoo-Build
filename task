@@ -173,7 +173,6 @@ function version() {
     docker -v
     docker compose version
     minikube version    
-    kubectl version
 }
 
 function set-addons-path() {
@@ -837,8 +836,8 @@ function generate-module-model() {
     # Generate template values
     MODEL_DOT_NAME="$2" # res.partner
     MODEL_NAME=$(echo "$MODEL_DOT_NAME" | tr '.' '_') # res_partner
-    NAME=$(echo "$MODEL_DOT_NAME" | cut "." -f2  | sed 's/[^_]\+/\L\u&/g') # Partners
-    MODEL_DESCRIPTION=$(echo "$MODEL_NAME" | sed 's/[^_]\+/\L\u&/g') # Res Partner
+    NAME=$(echo "$MODEL_DOT_NAME" | cut -d"." -f2  | sed 's/[^_]\+/\L\u&/g') # Partners
+    MODEL_DESCRIPTION=$(echo "$MODEL_NAME" | sed 's/[^_]\+/\L\u&/g' | sed 's/_/ /g') # Res Partner
     MODEL_CAMEL_NAME=$(echo "$MODEL_DESCRIPTION" | sed 's/ //g') # ResPartner
     export NAME MODULE_NAME MODEL_DOT_NAME MODEL_NAME MODEL_DESCRIPTION MODEL_CAMEL_NAME
     
@@ -847,6 +846,7 @@ function generate-module-model() {
     echo "from . import $MODEL_NAME" >> "$MODULE_PATH/models/__init__.py"
 
     echo "Substitute view template"
+    mkdir -p "$MODULE_PATH/views"
     envsubst '$NAME $MODULE_NAME $MODEL_DOT_NAME $MODEL_NAME $MODEL_DESCRIPTION $MODEL_CAMEL_NAME' < templates/model_views.xml > "$MODULE_PATH/views/${MODEL_NAME}_views.xml"
     echo "Update file $MODULE_NAME/__manifest__.py with:"
     echo -e "\t, \"views/${MODEL_NAME}_views.xml\""
