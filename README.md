@@ -27,7 +27,7 @@ This projects provides a highly opinionated way to develop Odoo modules. It feat
 
 The Odoo development environment has the following requirements:
 
-* [Docker](https://docs.docker.com/engine/install/) and [Docker Compose](https://docs.docker.com/compose/)
+* [Docker](https://docs.docker.com/engine/install/)
 * Install Python 3.11+ with [pyenv](https://github.com/pyenv/pyenv)
 * Install [PostgreSQL](https://www.postgresql.org/download/)
 * bash/zsh alias `task='./task'` with optional [bash](https://github.com/janikvonrotz/dotfiles/blob/master/bash/completions/task_completions)/[zsh](https://github.com/janikvonrotz/dotfiles/blob/master/oh-my-zsh/completions/_task) completion.
@@ -73,10 +73,16 @@ Run Odoo from source. Currently supported OS: Ubuntu, Debian, Pop!_OS, Darwin
 
 #### Install Odoo native requirements
 
-Pull the `odoo` submodule and install the python dependencies.
+Init submodules and checkout to Odoo version.
 
 ```bash
-git submodule update odoo
+task git-submodule-init
+task git-submodule-checkout $VERSION
+```
+
+Install the python dependencies.
+
+```bash
 task install-native
 ```
 
@@ -104,11 +110,24 @@ The browser will be opened automatically.
 
 #### Create a new module from source
 
-Scaffold a new module.
+Create a new module.
 
 ```bash
-task create-module addons/project_report
+task create-module addons/project/project_sprint
 ```
+
+Add a new model.
+
+```bash
+task generate-module-model addons/project/project_sprint project.sprint
+```
+
+Add model security.
+
+```bash
+task generate-model-security addons/project/project_sprint project.sprint
+```
+
 
 #### Load modules from thirdparty folder
 
