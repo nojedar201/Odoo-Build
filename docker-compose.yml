@@ -44,7 +44,7 @@ services:
       PGADMIN_DEFAULT_PASSWORD: admin
     volumes:
       - admin-data:/var/lib/pgadmin
-      - ./config/servers.json:/pgadmin4/servers.json
+      - ./servers.json:/pgadmin4/servers.json
   db:
     container_name: db
     image: ${POSTGRES_IMAGE:-postgres:14-alpine}
@@ -57,7 +57,7 @@ services:
     volumes:
       - db-data:/var/lib/postgresql/data/pgdata
   mail:
-    image: mailhog/mailhog
+    image: axllent/mailpit
     container_name: mail
     hostname: mail
     ports:

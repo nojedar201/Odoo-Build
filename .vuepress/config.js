@@ -1,6 +1,7 @@
 import { viteBundler } from '@vuepress/bundler-vite'
 import { defaultTheme } from '@vuepress/theme-default'
 import { searchPlugin } from '@vuepress/plugin-search'
+import { shikiPlugin } from '@vuepress/plugin-shiki'
 import { plausiblePlugin } from './plausible'
 import { defineUserConfig } from 'vuepress'
 import sidebar from './sidebar'
@@ -71,6 +72,10 @@ export default defineUserConfig({
         }),
         plausiblePlugin({
             'domain': 'odoo.build'
+        }),
+        shikiPlugin({
+            theme: 'catppuccin-latte',
+            langs: ['bash', 'yml', 'yaml', 'json', 'css', 'html', 'xml', 'groovy', 'py', 'python', 'sql', 'powershell', 'txt', 'csv', 'mermaid', 'md', 'markdown', 'toml', 'php'],
         }),
     ],
 })

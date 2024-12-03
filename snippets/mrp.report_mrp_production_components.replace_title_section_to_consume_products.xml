@@ -1,3 +1,4 @@
+<?xml version="1.0"?>
 <data inherit_id="mrp.report_mrp_production_components" priority="50">
 
   <xpath expr="//h3" position="replace">
@@ -8,6 +9,7 @@
         font-size: 14pt;
         font-weight: bold;
         padding-left: 5px;
+        border-color: white;
       }
     </style>
     <table id="consumed_products">
