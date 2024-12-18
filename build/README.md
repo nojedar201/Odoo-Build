@@ -6,6 +6,7 @@ A better Odoo image.
 - Odoo source is based on exact git revision
 - Setup `odoo.conf` with environment vars
 - Clones addons from git repos
+- Install pip packages without building the image
 - Detects and aggregates nested module folders
 - Store session information in database
 - Set and get environment name from server config
@@ -19,7 +20,7 @@ version: "3"
 services:
   odoo:
     container_name: odoo
-    image: mintsystem/odoo:17.0.20240730
+    image: mintsystem/odoo:16.0.20241125
     depends_on:
       - db
     environment:
@@ -28,13 +29,15 @@ services:
       PASSWORD: odoo
       PORT: 5432
       ENVIRONMENT: production
+      GIT_SSH_PUBLIC_KEY: ssh-ed25519 BBBBC3NzaC1lZDI1NTE5BBBBIDR9Ibi0mATjCyx1EYg594oFkY0rghtgo+pnFHOvAcym Mint-System-Project-MCC@github.com
       GIT_SSH_PRIVATE_KEY: |
         -----BEGIN OPENSSH PRIVATE KEY-----
-        QyNTUxOQAAACCuoR1PvK081rwrC5hlSXM7Q24cPQOpSlymLefnPiihxQAAAJjEbzDGxG8w
-        AAAEDx6kjL/1dmz7WZctryva7EphDT1rHyyfjxFiEPVnmrXq6hHU+8rTzWvCsLmGVJcztD
-        bhw9A6lKXKYt5+c+KKHFAAAAEmJvdEBtaW50LXN5c3RlbS5jaAECAw==
+        b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZW
+        QyNTUxOQAAACA0fSG4tJgE4wssdRGIOfeKBZGNK4IbYKPqZxRzrwHMpgAAAKi5ZBaFuWQW
+        hQAAAAtzc2gtZWQyNTUxOQAAACA0fSG4tJgE4wssdRGIOfeKBZGNK4IbYKPqZxRzrwHMpg
+        0BAgM=
         -----END OPENSSH PRIVATE KEY-----
-      ADDONS_GIT_REPOS: "git@github.com:Mint-System/Odoo-Apps-Server-Tools.git#17.0,git@github.com:OCA/server-tools.git#17.0"
+      ADDONS_GIT_REPOS: "git@github.com:Mint-System/Odoo-Apps-Server-Tools.git#16.0,git@github.com:OCA/server-tools.git#16.0"
       ODOO_ADDONS_PATH: /mnt/addons/,/mnt/oca/,/mnt/enterprise,/mnt/themes/
       SERVER_WIDE_MODULES: web,session_db
       PIP_INSTALL: astor
@@ -45,6 +48,9 @@ services:
       LIST_DB: False
       PROXY_MODE: True
       WORKERS: 4
+      LIMIT_REQUEST: 16384
+      LIMIT_TIME_CPU: 300
+      LIMIT_TIME_REAL: 600
     ports:
       - "127.0.0.1:8069:8069"
     volumes:
@@ -74,7 +80,7 @@ volumes:
 Extend the image with additional python packages:
 
 ```dockerfile
-FROM mintsystem/odoo:17.0.20240730
+FROM mintsystem/odoo:16.0.20241125
 
 RUN pip install prometheus-client astor fastapi python-multipart ujson a2wsgi parse-accept-language pyjwt
 ```
@@ -84,7 +90,7 @@ RUN pip install prometheus-client astor fastapi python-multipart ujson a2wsgi pa
 Copy a custom Odoo conf file to the image:
 
 ```dockerfile
-FROM mintsystem/odoo:17.0.20240730
+FROM mintsystem/odoo:16.0.20241125
 
 COPY ./odoo.conf.template /etc/odoo/
 ```

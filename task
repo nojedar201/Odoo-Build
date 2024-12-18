@@ -34,13 +34,18 @@ function help-table() {
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "generate-admin-passwd" "[pass]" "Generate hash for Odoo master password."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "translate-module" "[env][path][lang]" "Generate translation for Odoo module."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "generate-help-doc" "" "Write help table to task.md file."
+    printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "generate-module-overview" "" "Update module overview doc file."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "generate-module-security" "[path][model]" "Generate model access file for a selected model of a module."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "generate-module-model" "[path][model]" "Generate model files from templates."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "generate-module-snippet" "[path][ref]" "Generate view snippet from template."
+    printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "generate-snippets-doc" "" "Update snippets doc file."
+    printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "generate-revisions-doc" "" "Update revisions doc file."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "get-addons-path" "" "Output addons path."
+    printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "get-jsonrpc-session" "[env]" "Get user session token for Odoo env."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "get-module-version" "[path]" "Get module version from manifest."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "get-modules" "[path][option]" "Get list of modules in path. Option is 'basename' or 'dirname'."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "git-feature-branch" "[path]" "Create feature branch for Odoo module."
+    printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "git-fetch" "" "Fetch all Odoo version branches."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "git-mig-branch" "[path]" "Create migration branch for Odoo module."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "git-submodule-add" "[url] [path]" "Add git submodule."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "git-submodule-checkout" "" "Checkout submodule commits."
@@ -74,12 +79,15 @@ function help-table() {
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "node-build" "" "Create vuepress build."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "node-serve-build" "" "Serve vuepress build."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "odoo-cloc" "[db]" "Count custom line of codes. Default is branch name."
+    printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "odoo-checkin" "[env]" "Attendance checkin on target Odoo env."
+    printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "odoo-checkout" "[env]" "Attendance checkout on target Odoo env."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "patch-database" "[db][path]" "Apply sql file to database. Default database is branch name."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "publish" "" "Publish Odoo Docker image."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "ps" "" "List docker processes."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "pytest-module" "[db][name,path]" "Run module tests with pytest."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "release-module" "[path]" "Create GitHub release for a module."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "remove" "[name]" "Remove docker containers and volumes. Options: none, db, admin, odoo, mail."
+    printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "remove-env" "[env]" "Remove environment config."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "remove-module" "[db][name]" "Remove target Odoo module."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "reset-views" "[db][key]" "Execute hard reset on views matching keys."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "restart" "[name]" "Restart docker container."
@@ -89,17 +97,22 @@ function help-table() {
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "set-addons-path" "" "Set Odoo addons path env variable."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "source" "" "Source the Python virtual env."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "show-env" "[env]" "Output content of the env file."
+    printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "show-revision" "[revision]" "Show references of Odoo revision."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "start" "[name][db]" "Start docker container. Options: none, db, admin, odoo, native, mail."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "start-kind" "" "Start kind Kubernetes cluster."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "start-minikube" "" "Start minikube Kubernetes cluster."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "start-psql" "[db]" "Start PSQL shell in Docker container. Default is branch name."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "start-shell" "[db]" "Start Odoo shell from source folder. Default is branch name."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "stop" "[name]" "Stop docker containers."
-    printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "test-odoo-jsonrpc" "[env][model]" "Test json rpc connection."
+    printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "template-odoo-rc" "" "Template the Odoo config file."
+    printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "test-docker" "" "Test docker environment."
+    printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "test-jsonrpc" "[env][model]" "Test json rpc connection."
+    printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "test-k8s" "" "Test Kubernetes environment."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "test-module" "[db][name,path]" "Test target Odoo module."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "test-module-repo" "[db][path]" "Test target Odoo modules in repo folder."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "update-app-list" "[db]" "Update app list."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "update-docs" "" "Update project docs."
+    printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "upgrade-module" "[path][version]" "Upgrade code of module from target Odoo version."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "update-module" "[db][name,path]" "Update target Odoo module."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "update-readme" "[path]" "Update Readme file of Odoo module collection."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "update-snippet" "[env][path]" "Update snippet xml definition."
@@ -108,6 +121,7 @@ function help-table() {
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "version" "" "Show version of required tools."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "zip-module" "[path]" "Create zip file for module."
 }
+
 function help() {
     echo
     echo "$1 <command> [options]"
@@ -181,7 +195,8 @@ function version() {
     psql -V
     docker -v
     docker compose version
-    minikube version    
+    minikube version
+    kind version
 }
 
 function generate-admin-passwd() {
@@ -221,6 +236,10 @@ function get-addons-path() {
 
 function template-odoo-rc() {
     echo "Template $ODOO_RC"
+
+    GIT_SSH_PRIVATE_KEY=$(echo -e "$GIT_SSH_PRIVATE_KEY" | base64 -w0)
+    export GIT_SSH_PRIVATE_KEY
+    export GIT_SSH_PUBLIC_KEY
     envsubst < "odoo.conf.template" > "$ODOO_RC"
 }
 
@@ -308,6 +327,12 @@ function edit-env() {
     if test -z "$1"; then echo "\$1 is empty."; exit; fi
     ENV_FILEPATH="$ODOO_BUILD_CONFIG_DIR/.env.$1"
     "$EDITOR" "$ENV_FILEPATH"
+}
+
+function remove-env() {
+    if test -z "$1"; then echo "\$1 is empty."; exit; fi
+    ENV_FILEPATH="$ODOO_BUILD_CONFIG_DIR/.env.$1"
+    rm "$ENV_FILEPATH"
 }
 
 # Docs Commands
@@ -432,7 +457,10 @@ For each major release there are multiple revisions.\n" > "revisions.md"
             fi
 
             REVISIONS[$VERSION]+=$'\n\n'
-            REVISIONS[$VERSION]+="#### [$REVISION]($PATH_URL/$FILE)"
+            REVISIONS[$VERSION]+="#### $REVISION"
+            REVISIONS[$VERSION]+=$'\n\n```bash\n'
+            REVISIONS[$VERSION]+=$(cat "$FILE")
+            REVISIONS[$VERSION]+=$'\n```'
         fi
     done
 
@@ -575,6 +603,10 @@ function upload-module() {
 
     echo "odoo_apps:"
     echo -e "$UPLOADS"
+}
+
+function logs() {
+    docker logs odoo -f
 }
 
 # Script Commands
@@ -769,6 +801,39 @@ function stop() {
     docker compose stop "$1"
 }
 
+function test-docker() {
+    activate-venv
+    version
+
+    if [ -z "$GIT_SSH_PRIVATE_KEY" ]; then
+        echo "Generate SSH private key."
+        if [ ! -f "tmp/ed25519" ]; then
+            ssh-keygen -t ed25519 -C admin@example.com -f tmp/ed25519 -N ""
+        fi
+        GIT_SSH_PRIVATE_KEY=$(cat tmp/ed25519)
+        export GIT_SSH_PRIVATE_KEY
+        GIT_SSH_PUBLIC_KEY=$(cat tmp/ed25519.pub)
+    fi
+
+    echo "Setup Docker environment."
+    export DOCKER_REGISTRY=mintsystem/
+    export ODOO_ADDONS_PATH="/mnt/enterprise"
+    export ADDONS_GIT_REPOS="https://github.com/OCA/server-env.git#${GIT_BRANCH},https://github.com/OCA/server-tools.git#${GIT_BRANCH},https://github.com/Mint-System/Odoo-Apps-Server-Tools.git#${GIT_BRANCH},https://github.com/Mint-System/Odoo-Apps-Connector.git#${GIT_BRANCH}"
+    export GIT_SSH_PUBLIC_KEY
+    export ODOO_DATABASE=test
+    export PIP_INSTALL=prometheus-client
+    install-odoo-scripts
+    start
+
+    # Wait for container to be ready
+    sleep 3
+    docker logs odoo
+
+    # Install modules
+    docker-odoo-init -d "$ODOO_DATABASE" -i contacts,web_enterprise,mail_server_filter,prometheus_exporter,server_environment_ir_config_parameter,git_base -w
+    restart odoo
+}
+
 # Kubernetes Commands
 
 function start-kind() {
@@ -788,17 +853,30 @@ function k8s-apply() {
     kubectl apply -f k8s/postgres-deploy.yaml
     kubectl apply -f k8s/postgres-svc.yaml
 
-    echo "Deploy Odoo:"
+    echo -e "\nDeploy Odoo:"
     kubectl apply -f k8s/odoo-cm.yaml
-    kubectl apply -f k8s/odoo17-deploy.yaml
+    kubectl apply -f k8s/odoo16-deploy.yaml
     kubectl apply -f k8s/odoo-svc.yaml
 
-    echo "Init Odoo database:"
+    
+    echo -e "\nWait until resources are ready."
+    sleep 8
+
     ODOO_POD=$(kubectl get pods -o=name --all-namespaces | grep odoo)
+    POSTGRES_POD=$(kubectl get pods -o=name --all-namespaces | grep postgres)
+
+    echo -e "\nWait for $ODOO_POD and $POSTGRES_POD pods to be running:"
+    kubectl wait --for=condition=Ready "$ODOO_POD" "$POSTGRES_POD" --timeout=60s
+    sleep 3
+
+    echo -e "\nInit Odoo database in $ODOO_POD pod:"
     kubectl exec "$ODOO_POD" -- env
     kubectl exec "$ODOO_POD" -- /bin/bash -c "odoo -d odoo -i web --db_host \$HOST -r\$USER -w\$PASSWORD --stop-after-init --no-http"
+}
 
-    echo "Access Odoo with: $(minikube service odoo --url)"
+function test-k8s() {
+    start-kind
+    k8s-apply
 }
 
 # Interactive Shell Commands
@@ -1094,6 +1172,15 @@ function init-module() {
     odoo -d "$DATABASE" -i "$MODULES" --config "$ODOO_RC" --addons-path="$ADDONS_PATH" --stop-after-init --no-http
 }
 
+function upgrade-module() {
+    if test -z "$1"; then echo "\$1 is empty."; exit; fi
+    if test -z "$2"; then echo "\$2 is empty."; exit; fi
+
+    activate-venv
+    echo "Upgrade code of module $1 from $2 ..."
+    odoo upgrade_code --addons-path "$1" --from "$2"
+}
+
 function update-module() {
     if test -z "$1"; then echo "\$1 is empty."; exit; fi
 
@@ -1109,7 +1196,11 @@ function update-module() {
     activate-venv
     set-addons-path
     echo "Updating module $MODULE_NAME on $DATABASE ..."
-    odoo -d "$DATABASE" -u "$MODULE_NAME" --config "$ODOO_RC" --addons-path="$ADDONS_PATH" --stop-after-init --no-http
+    if [[ -n "$ODOO_PARAM" ]] ; then
+        odoo --database "$DATABASE" --update "$MODULE_NAME" --config "$ODOO_RC" --addons-path="$ADDONS_PATH" --stop-after-init --no-http "$ODOO_PARAM"
+    else
+        odoo --database "$DATABASE" --update "$MODULE_NAME" --config "$ODOO_RC" --addons-path="$ADDONS_PATH" --stop-after-init --no-http
+    fi
 }
 
 function translate-module() {
@@ -1289,6 +1380,7 @@ function generate-module-security() {
     MODEL_NAME=$(echo "$MODEL_DOT_NAME" | tr '.' '_')
 
     ACCESS_FILE="$PARENT_DIR/$MODULE_NAME/security/ir.model.access.csv"
+    mkdir -p "$PARENT_DIR/$MODULE_NAME/security"
 
     if [ ! -f "$ACCESS_FILE" ]; then
         echo "Init security file: $ACCESS_FILE"
@@ -1520,6 +1612,22 @@ function lint-snippets() {
 
 # Git Commands
 
+function git-fetch() {
+    git fetch origin 13.0
+    git fetch origin 14.0
+    git fetch origin 15.0
+    git fetch origin 16.0
+    git fetch origin 17.0
+    git fetch origin 18.0
+}
+
+function git-submodule-add() {
+    if test -z "$1"; then echo "\$1 is empty."; exit; fi
+    if test -z "$2"; then echo "\$2 is empty."; exit; fi
+
+    git submodule add -f -b "$GIT_BRANCH" "$1" "$2"
+}
+
 function git-submodule-ls() {
     echo $(git config --file .gitmodules --get-regexp url | sed -e 's/submodule.//g' -e 's/.url.*//g')
 }
@@ -1527,7 +1635,7 @@ function git-submodule-ls() {
 function git-submodule-list() {
     # git submodule foreach --quiet 'printf "%-30s %-20s\n" "$name" "$(git rev-parse --abbrev-ref HEAD)"'
     git config --file .gitmodules --get-regexp url | sed -e 's/submodule.//g' -e 's/.url//g' | awk '{ print $1 "," $2}'
-} 
+}
 
 function git-submodule-delete() {
     echo "Delete git submodules."
@@ -1538,6 +1646,23 @@ function git-submodule-delete() {
         echo "Delete submodule: $SUBMODULE"
         rm -rf "$SUBMODULE"
     done
+}
+
+function git-submodule-remove() {
+    if test -z "$1"; then echo "\$1 is empty."; exit; fi
+
+    echo "Deinit submodule"
+    git submodule deinit -f "$1"
+    
+    echo "Move submodule to tmp folder"
+    mkdir -p tmp/"$1"
+    mv "$1" tmp/"$1"
+
+    echo "Remove submodule from work tree"
+    git rm -f "$1"
+
+    echo "Remove submodule from .git folder"
+    rm -rf .git/modules/"$1"
 }
 
 function git-submodule-init() {
@@ -1607,6 +1732,30 @@ function git-submodule-sync() {
     git-submodule-checkout
 }
 
+function git-feature-branch(){
+    if test -z "$1"; then echo "\$1 is empty."; exit; fi
+
+    MODULE_NAME=$(basename "$1")
+    MODULE_PATH=$(dirname "$1")
+
+    echo "Create feature branch for $MODULE_NAME in $MODULE_PATH ..."
+    cd ./"$MODULE_PATH" || exit
+    pwd
+    git switch -c "feature-$MODULE_NAME"
+}
+
+function git-mig-branch(){
+    if test -z "$1"; then echo "\$1 is empty."; exit; fi
+
+    MODULE_NAME=$(basename "$1")
+    MODULE_PATH=$(dirname "$1")
+
+    echo "Create mig branch for $MODULE_NAME in $MODULE_PATH ..."
+    cd ./"$MODULE_PATH" || exit
+    pwd
+    git switch -c "$GIT_BRANCH-mig-$MODULE_NAME"
+}
+
 function checkout-config-files() {
     if test -z "$1"; then echo "\$1 is empty."; exit; fi
 
@@ -1638,14 +1787,51 @@ function list-revision() {
     ls scripts/odoo_revision_* | sed 's/scripts\/odoo_revision_//g'
 }
 
-function checkout-revision() {
-    export ODOO_REVISION_DOCKER_PULL
+function show-revision() {
     if [ -n "$1" ]; then
-        echo "Execute script for revision: $1"
-        ./scripts/odoo_revision_"$1"
+        ODOO_REVISION="$1"
+    fi
+    ODOO_VERSION=$(echo "$ODOO_REVISION" | cut -d'.' -f1-2)
+
+    echo "Load refs for revision: $ODOO_REVISION"
+    export $(cat "scripts/odoo_revision_$ODOO_REVISION" | sed 's/#.*//g' | xargs)
+
+    echo "Odoo Ref: $ODOO_REF"
+    echo "Odoo Enterprise Ref: $ODOO_ENTERPRISE_REF"
+    echo "Odoo Themes Ref: $ODOO_THEME_REF"
+    echo "Odoo Docker Ref: $ODOO_DOCKER_REF"
+}
+
+function checkout-revision() {
+    if [ -n "$1" ]; then
+        ODOO_REVISION="$1"
+    fi
+    ODOO_VERSION=$(echo "$ODOO_REVISION" | cut -d'.' -f1-2)
+
+    echo "Update revision var in .env file."
+    if grep -q "ODOO_REVISION" .env; then
+        sed -i -e "s/^ODOO_REVISION=${ODOO_VERSION}.*/ODOO_REVISION=${ODOO_REVISION}/" .env
     else
-        echo "Execute script for revision: $ODOO_REVISION"
-        ./scripts/odoo_revision_"${ODOO_REVISION}"
+        echo "ODOO_REVISION=${ODOO_REVISION}" >> .env
+    fi
+
+    echo "Load refs for revision: $ODOO_REVISION"
+    export $(cat "scripts/odoo_revision_$ODOO_REVISION" | sed 's/#.*//g' | xargs)
+
+    echo "Checkout and tag git repos ..."
+    git -C odoo checkout $ODOO_REF
+    git -C odoo tag -a $ODOO_REVISION -m "$ODOO_REVISION"
+    git -C enterprise checkout $ODOO_ENTERPRISE_REF
+    git -C enterprise tag -a $ODOO_REVISION -m "$ODOO_REVISION"
+    git -C themes checkout $ODOO_THEME_REF
+    git -C themes tag -a $ODOO_REVISION -m "$ODOO_REVISION"
+
+
+    if $ODOO_REVISION_DOCKER_PULL; then
+        echo "Pull and tag Docker image ..."
+        docker pull "$ODOO_DOCKER_REF"
+        IMAGE_ID=$(docker image inspect "$ODOO_DOCKER_REF" --format "{{ .ID }}")
+        docker tag ${IMAGE_ID:7:12} odoo:$ODOO_REVISION
     fi
 }
 
@@ -1687,63 +1873,60 @@ function create-revision() {
 
 # RPC Commands
 
-function test-odoo-jsonrpc() {
+get-jsonrpc-session() {
+    if test -z "$1"; then echo "\$1 is empty."; exit; fi
+
+
+    load-env "$1"
+    AUTH_URL="${ODOO_URL}/web/session/authenticate"
+    AUTH_PAYLOAD=$(cat <<EOF
+{
+    "jsonrpc": "2.0",
+    "method": "call",
+    "params": {
+        "db": "${ODOO_DATABASE}",
+        "login": "${ODOO_USERNAME}",
+        "password": "${ODOO_PASSWORD}"
+    },
+    "id": 1
+}
+EOF
+)
+
+    echo "Authenticating with Odoo..."
+    RESPONSE=$(curl -s \
+        -X POST \
+        -H "Content-Type: application/json" \
+        -d "${AUTH_PAYLOAD}" \
+        "${AUTH_URL}")
+
+    # Extract session ID from the response
+    SESSION_ID=$(echo "$RESPONSE" | jq -r '.result.session_id')
+    if [[ "$SESSION_ID" == "null" || -z "$SESSION_ID" ]]; then
+        echo "Authentication failed! Response: $RESPONSE"
+        exit 1
+    fi
+
+    echo "Authentication successful! Session ID: $SESSION_ID"
+    echo "$SESSION_ID"
+}
+
+function test-jsonrpc() {
     if test -z "$1"; then echo "\$1 is empty."; exit; fi
 
     activate-venv
-    [ -n "$1" ] && load-env "$1"
-    
+    load-env "$1"
     ODOO_MODEL="$2"
     export ODOO_MODEL
-    scripts/odoo_jsonrpc
+
+    scripts/jsonrpc
 }
 
-function git-submodule-add() {
-    if test -z "$1"; then echo "\$1 is empty."; exit; fi
-    if test -z "$2"; then echo "\$2 is empty."; exit; fi
-
-    git submodule add -f -b "$GIT_BRANCH" "$1" "$2"
-}
-
-function git-submodule-remove() {
+odoo-checkout() {
     if test -z "$1"; then echo "\$1 is empty."; exit; fi
 
-    echo "Deinit submodule"
-    git submodule deinit -f "$1"
-    
-    echo "Move submodule to tmp folder"
-    mkdir -p tmp/"$1"
-    mv "$1" tmp/"$1"
-
-    echo "Remove submodule from work tree"
-    git rm -f "$1"
-
-    echo "Remove submodule from .git folder"
-    rm -rf .git/modules/"$1"
-}
-
-function git-feature-branch(){
-    if test -z "$1"; then echo "\$1 is empty."; exit; fi
-
-    MODULE_NAME=$(basename "$1")
-    MODULE_PATH=$(dirname "$1")
-
-    echo "Create feature branch for $MODULE_NAME in $MODULE_PATH ..."
-    cd ./"$MODULE_PATH" || exit
-    pwd
-    git switch -c "feature-$MODULE_NAME"
-}
-
-function git-mig-branch(){
-    if test -z "$1"; then echo "\$1 is empty."; exit; fi
-
-    MODULE_NAME=$(basename "$1")
-    MODULE_PATH=$(dirname "$1")
-
-    echo "Create mig branch for $MODULE_NAME in $MODULE_PATH ..."
-    cd ./"$MODULE_PATH" || exit
-    pwd
-    git switch -c "$GIT_BRANCH-mig-$MODULE_NAME"
+    load-env "$1"
+    SESSION_ID=$(get-jsonrpc-session "$1")
 }
 
 case "$1" in
@@ -1813,14 +1996,26 @@ case "$1" in
     generate-module-overview)
         generate-module-overview
         ;;
+    generate-revisions-doc)
+        generate-revisions-doc
+        ;;    
+    generate-snippets-doc)
+        generate-snippets-doc
+        ;;
     get-addons-path)
         get-addons-path
+        ;;
+    get-jsonrpc-session)
+        get-jsonrpc-session "$2"
         ;;
     get-modules)
         get-modules "$2" "$3"
         ;;
     get-module-version)
         get-module-version "$2"
+        ;;
+    git-fetch)
+        git-fetch
         ;;
     git-feature-branch)
         git-feature-branch "$2"
@@ -1923,7 +2118,7 @@ case "$1" in
         list-modules "$2"
         ;;
     logs)
-        docker logs odoo -f
+        logs
         ;;
     node-install)
         npm install
@@ -1937,6 +2132,15 @@ case "$1" in
     node-serve-build)
         cd .vuepress/dist
         npx serve
+        ;;
+    odoo-cloc)
+        odoo-cloc "$2"
+        ;;
+    odoo-checkin)
+        odoo-checkin "$2"
+        ;;
+    odoo-checkout)
+        odoo-checkout "$2"
         ;;
     patch-database)
         patch-database "$2" "$3"
@@ -1952,6 +2156,9 @@ case "$1" in
         ;;
     release-module)
         release-module "$2"
+        ;;
+    remove-env)
+        remove-env "$2"
         ;;
     remove-module)
         remove-module "$2" "$3"
@@ -1977,6 +2184,9 @@ case "$1" in
     set-addons-path)
         set-addons-path
         ;;
+    show-revision)
+        show-revision "$2"
+        ;;
     source)
         activate-venv
         ;;
@@ -2001,11 +2211,20 @@ case "$1" in
     stop)
         stop "$2"
         ;;
+    template-odoo-rc)
+        template-odoo-rc
+        ;;
+    test-docker)
+        test-docker
+        ;;
     test-coverage-module)
         test-coverage-module "$2" "$3"
         ;;
-    test-odoo-jsonrpc)
-        test-odoo-jsonrpc "$2" "$3"
+    test-jsonrpc)
+        test-jsonrpc "$2" "$3"
+        ;;
+    test-k8s)
+        test-k8s
         ;;
     test-module)
         test-module "$2" "$3"
@@ -2021,6 +2240,9 @@ case "$1" in
         ;;
     update-docs)
         update-docs
+        ;;
+    upgrade-module)
+        upgrade-module "$2" "$3"
         ;;
     update-module)
         update-module "$2" "$3"

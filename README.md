@@ -3,7 +3,7 @@
 Odoo Build
 ==========
 
-[![Docker pulls](https://img.shields.io/docker/pulls/mintsystem/odoo)](https://hub.docker.com/r/mintsystem/odoo/)
+[![Docker pulls](https://img.shields.io/docker/pulls/mintsystem/odoo)](https://hub.docker.com/r/mintsystem/odoo/) [![.github/workflows/test.yml](https://github.com/Mint-System/Odoo-Build/actions/workflows/test.yml/badge.svg)](https://github.com/Mint-System/Odoo-Build/actions/workflows/test.yml)
 
 This is the [Mint System](https://www.mint-system.ch/) Odoo development environment.
 
@@ -344,6 +344,12 @@ While starting the native server this error is thrown:
 OSError: [Errno 24] inotify instance limit reached
 ```
 
+Or this error:
+
+```bash
+inotify.calls.InotifyError: Call failed (should not be -1): (-1) ERRNO=(0)
+```
+
 **Solution**
 
 Increase inotify watch limit.
@@ -352,7 +358,7 @@ Increase inotify watch limit.
 sudo vi /etc/sysctl.conf
 ```
 
-```conf
+```
 fs.inotify.max_user_watches=524288
 fs.inotify.max_user_instances=256
 ```
