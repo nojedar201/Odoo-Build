@@ -1,5 +1,7 @@
 #!/bin/bash
 cd "$(dirname "$0")" || exit
+# Commands such as git pull return exit code if there are not changes
+# set -e
 
 function help-table() {
     # Define column widths
@@ -19,6 +21,7 @@ function help-table() {
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "checkout-config-files" "[branch]" "Checkout config files from another branch."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "checkout-revision" "[revision]" "Run Odoo revision script or checkout revision set by env var."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "clear-assets" "[db]" "Clear all assets of Odoo database."
+    printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "clear-views" "[db]" "Clear all views of Odoo database."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "clear-filestore" "[db]" "Clear local filestore folder. No param will clear all filestores. Default is branch name."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "convert-database" "[db]" "Convert database backup file from PostgreSQL 9.5 to latest. Default is branch name."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "create-module" "[path]" "Create new Odoo module from template."
@@ -51,10 +54,10 @@ function help-table() {
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "git-submodule-checkout" "" "Checkout submodule commits."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "git-submodule-list" "" "List path and url of submodules."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "git-submodule-init" "" "Init submodules listed in the .gitmodules file."
-    printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "git-submodule-pull" "" "Pull all submodules."
-    printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "git-submodule-remove" "[path]" "Remove git submodule."
+    printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "git-submodule-pull" "" "Pull all submodules listed in the .gitmodules file."
+    printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "git-submodule-remove" "[path]" "Remove a git submodule."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "git-submodule-delete" "" "Delete all submodule folders."
-    printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "git-submodule-switch" "[branch]" "Switch branch for all submodules."
+    printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "git-submodule-switch" "[branch]" "Switch branch for all submodules listed in the .gitmodules file."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "git-submodule-sync" "" "Switch, stash and pull all submodules."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "import-csv" "[db][path]" "Import data from csv. Filename must match PostgreSQL table name."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "info" "" "Show values of project env vars."
@@ -113,6 +116,7 @@ function help-table() {
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "update-app-list" "[db]" "Update app list."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "update-docs" "" "Update project docs."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "upgrade-module" "[path][version]" "Upgrade code of module from target Odoo version."
+    printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "upgrade-odoo" "[db][version][mode]" "Run the Odoo upgrade scripts. Default mode ist 'test'."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "update-module" "[db][name,path]" "Update target Odoo module."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "update-readme" "[path]" "Update Readme file of Odoo module collection."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "update-snippet" "[env][path]" "Update snippet xml definition."
@@ -507,14 +511,15 @@ function get-module-version() {
         echo "\$1 is empty."
     else
         # Get version of module
-        VERSION=$(grep -m 1 version "$1/__manifest__.py" |  sed "s;';\";g"  | sed "s/,//g" | sed  's/#.*//g')
+        VERSION=$(grep -m 1 \"version "$1/__manifest__.py" |  sed "s;';\";g"  | sed "s/,//g" | sed  's/#.*//g')
         VERSION=$(echo "{ $VERSION }" | jq .version | sed 's/"//g' | sed 's/null//g')
+        
         # Set default version
         [ -z "$VERSION" ] && VERSION=0.0
 
         COUNT_DOTS=$(echo "$VERSION" | grep -o "\." | wc -l)
 
-        # check if oca version or enterprise version
+        # Check if oca version or enterprise version
         if [[ $COUNT_DOTS == 2 ]]; then
             VERSION="$GIT_BRANCH.$VERSION"
         fi
@@ -615,6 +620,28 @@ function install-odoo-scripts() {
     curl -L https://raw.githubusercontent.com/mint-system/ansible-build/master/roles/odoo_scripts/files/install | bash
 }
 
+function upgrade-odoo() {
+    if test -z "$1"; then echo "\$1/database is empty."; exit; fi
+    if test -z "$2"; then echo "\$2/version is empty."; exit; fi
+
+    DATABASE="$1"
+    ODOO_TARGET_VERSION="$2"
+    MODE="test"
+    if [ -z "$3" ]; then
+        # Options: test, production
+        MODE="$2"
+    fi
+    NEW_DATABASE="${DATABASE}_${ODOO_TARGET_VERSION}"
+
+    echo "Execute Odoo upgrade script in $MODE mode for $DATABASE with version $ODOO_TARGET_VERSION."
+    echo "The database will be restored as $NEW_DATABASE."
+    export PGHOST=localhost
+    export PGUSER=odoo
+    export PGPASSWORD=odoo
+    python <(curl -s https://upgrade.odoo.com/upgrade) "$MODE" -d "$DATABASE" -t "$ODOO_TARGET_VERSION" -r "$NEW_DATABASE"
+    echo "Upgrade finished successfully."
+}
+
 # Install Commands
 
 function install-native() {    
@@ -635,7 +662,7 @@ function install-native() {
         sudo apt-get install -y libsasl2-dev python-dev libldap2-dev libssl-dev libpq-dev
 
         echo "Install xmllint"
-        sudo apt install libxml2-utils
+        sudo apt install -y libxml2-utils
 
     elif [[ "$OS_RELEASE" =~ ^(Darwin)$ ]]; then
 
@@ -658,15 +685,15 @@ function install-native() {
         exit 1
     fi
 
+    echo "Install Odoo development tools"
+    pip install ${PIP_INOTIFY}
+    pip install -r requirements.txt
+
     echo "Install Odoo dependencies"
     pip install -r odoo/requirements.txt
 
     echo "Configure Odoo as python package"
     pip install -e odoo
-
-    echo "Install Odoo development tools"
-    pip install setuptools wheel ${PIP_INOTIFY} watchdog
-    pip install -r requirements.txt
 }
 
 # Process Commands
@@ -999,6 +1026,25 @@ function clear-assets() {
     echo "Delete these assets for $DATABASE:"
     psql "postgres://odoo:odoo@localhost/$DATABASE" -c "select id,name from ir_attachment where res_model='ir.ui.view' and name like '%assets_%';"
     psql "postgres://odoo:odoo@localhost/$DATABASE" -c "delete from ir_attachment where res_model='ir.ui.view' and name like '%assets_%';"
+}
+
+function clear-views() {
+    DATABASE="$1"
+    if [ -z "$DATABASE" ]; then
+        DATABASE="$ODOO_DATABASE"
+    fi
+
+    echo "Archive views with prefix 'mint_system'."
+    psql "postgres://odoo:odoo@localhost/$DATABASE" -c  "SELECT id,name from ir_ui_view WHERE name like '%mint_system%';"
+    psql "postgres://odoo:odoo@localhost/$DATABASE" -c  "UPDATE ir_ui_view SET active=false WHERE name like '%mint_system%';"
+
+    echo "Archive views with prefix 'Odoo Studio:'."
+    psql "postgres://odoo:odoo@localhost/$DATABASE" -c  "SELECT id,name from ir_ui_view WHERE name like '%Odoo Studio:%';"
+    psql "postgres://odoo:odoo@localhost/$DATABASE" -c  "UPDATE ir_ui_view SET active=false WHERE name like '%Odoo Studio:%';"
+
+    echo "Delete all active views for $DATABASE in $CONTAINER :"
+    psql "postgres://odoo:odoo@localhost/$DATABASE" -c  "DELETE FROM report_layout WHERE view_id IN (SELECT id FROM ir_ui_view WHERE active = TRUE);"
+    psql "postgres://odoo:odoo@localhost/$DATABASE" -c  "WITH RECURSIVE views_to_delete AS (SELECT id, inherit_id FROM ir_ui_view WHERE active = TRUE AND inherit_id IS NULL UNION ALL SELECT v.id, v.inherit_id FROM ir_ui_view v JOIN views_to_delete p ON v.inherit_id = p.id) DELETE FROM ir_ui_view WHERE id IN (SELECT id FROM views_to_delete);"
 }
 
 function convert-database() {
@@ -1775,6 +1821,7 @@ function checkout() {
 
     echo "Switch current branch to $GIT_BRANCH."
     git switch "$GIT_BRANCH"
+    git pull
 
     git-submodule-init
 
@@ -1794,7 +1841,7 @@ function show-revision() {
     ODOO_VERSION=$(echo "$ODOO_REVISION" | cut -d'.' -f1-2)
 
     echo "Load refs for revision: $ODOO_REVISION"
-    export $(cat "scripts/odoo_revision_$ODOO_REVISION" | sed 's/#.*//g' | xargs)
+    source "scripts/odoo_revision_$ODOO_REVISION"
 
     echo "Odoo Ref: $ODOO_REF"
     echo "Odoo Enterprise Ref: $ODOO_ENTERPRISE_REF"
@@ -1850,8 +1897,8 @@ function create-revision() {
 
     # Get git commit by date
     cd odoo
-    ODOO_REF=$(git rev-list -n 1 --before="$BEFORE_DATE" origin/$ODOO_VERSION)
-    git checkout "$ODOO_REF"
+    REF=$(git rev-list -n 1 --before="$BEFORE_DATE" origin/$ODOO_VERSION)
+    git checkout "$REF"
     cd ..
     cd enterprise
     ENTERPRISE_REF=$(git rev-list -n 1 --before="$BEFORE_DATE" origin/$ODOO_VERSION)
@@ -1863,8 +1910,8 @@ function create-revision() {
     cd ..
 
     echo "Create revision: $REVISION"
-    export REVISION ODOO_REF ENTERPRISE_REF THEME_REF DOCKER_REF
-    envsubst '$REVISION $ODOO_REF $ENTERPRISE_REF $THEME_REF $DOCKER_REF' < templates/odoo_revision > scripts/odoo_revision_"$REVISION"
+    export REVISION REF ENTERPRISE_REF THEME_REF DOCKER_REF
+    envsubst '$REVISION $REF $ENTERPRISE_REF $THEME_REF $DOCKER_REF' < templates/odoo_revision > scripts/odoo_revision_"$REVISION"
     chmod +x scripts/odoo_revision_"$REVISION"
 
     echo "Checkout revision: $REVISION"
@@ -1950,6 +1997,9 @@ case "$1" in
         ;;
     clear-assets)
         clear-assets "$2"
+        ;;
+    clear-views)
+        clear-views "$2"
         ;;
     clear-filestore)
         clear-filestore "$2"
@@ -2243,6 +2293,9 @@ case "$1" in
         ;;
     upgrade-module)
         upgrade-module "$2" "$3"
+        ;;
+    upgrade-odoo)
+        upgrade-odoo "$2" "$3" "$4"
         ;;
     update-module)
         update-module "$2" "$3"
