@@ -8,7 +8,13 @@ All notable changes to this project will be documented in this file. The format 
 
 * Run the Odoo upgrade script with `upgrade-odoo`.
 * Upgrade module code with `upgrade-module`.
-* After switching version branch with `checkout` the new branch is pulled
+* After switching version branch with `checkout` the new branch is pulled.
+* Image shows revision date in settings page.
+* Image supports env vars to initialize database.
+* `test-docker` uses new env vars to initialize database.
+* Extended usage section of the Image README file.
+* Use prefixed `PG` env vars for database connection.
+* Image supports auto update modules with click-odoo.
 
 ### Fixed
 

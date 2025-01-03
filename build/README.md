@@ -3,32 +3,32 @@
 A better Odoo image.
 
 - Ships with python 3.11
-- Odoo source is based on exact git revision
+- Odoo source is based on exact [revision](https://odoo.build/revisions.html)
 - Setup `odoo.conf` with environment vars
-- Clones addons from git repos
+- Clone addons from git repos
 - Install pip packages without building the image
-- Detects and aggregates nested module folders
+- Detect addons in nested module folders
 - Store session information in database
-- Set and get environment name from server config
+- Get environment name from server config
+- Initialize database with selected modules
+- Built-in [manifestoo](https://github.com/acsone/manifestoo) and [click-odoo-contrib](https://github.com/acsone/click-odoo-contrib)
 
 Source: <https://github.com/Mint-System/Odoo-Build/tree/16.0/build>
 
 ## Usage
 
 ```yml
-version: "3"
 services:
   odoo:
     container_name: odoo
-    image: mintsystem/odoo:16.0.20241125
+    image: mintsystem/odoo:16.0.20241220
     depends_on:
       - db
     environment:
-      HOST: db
-      USER: odoo
-      PASSWORD: odoo
-      PORT: 5432
-      ENVIRONMENT: production
+      PGHOST: db
+      PGUSER: odoo
+      PGPASSWORD: odoo
+      PGPORT: 5432
       GIT_SSH_PUBLIC_KEY: ssh-ed25519 BBBBC3NzaC1lZDI1NTE5BBBBIDR9Ibi0mATjCyx1EYg594oFkY0rghtgo+pnFHOvAcym Mint-System-Project-MCC@github.com
       GIT_SSH_PRIVATE_KEY: |
         -----BEGIN OPENSSH PRIVATE KEY-----
@@ -39,18 +39,23 @@ services:
         -----END OPENSSH PRIVATE KEY-----
       ADDONS_GIT_REPOS: "git@github.com:Mint-System/Odoo-Apps-Server-Tools.git#16.0,git@github.com:OCA/server-tools.git#16.0"
       ODOO_ADDONS_PATH: /mnt/addons/,/mnt/oca/,/mnt/enterprise,/mnt/themes/
+      ODOO_DATABASE: 16.0
+      ODOO_INIT: True
+      ODOO_INIT_LANG: de_CH
+      ENVIRONMENT: production
+      PIP_INSTALL: prometheus-client
       SERVER_WIDE_MODULES: web,session_db
-      PIP_INSTALL: astor
       SESSION_DB_URI: postgres://odoo:odoo@db/16.0
+      PROXY_MODE: True
       LOG_LEVEL: debug
+      LIST_DB: False
       ADMIN_PASSWD: oqua9AiHeibac2pie9ei
       DBFILTER: ^%d$
-      LIST_DB: False
-      PROXY_MODE: True
       WORKERS: 4
       LIMIT_REQUEST: 16384
       LIMIT_TIME_CPU: 300
       LIMIT_TIME_REAL: 600
+      CLICK_ODOO_UPDATE: True
     ports:
       - "127.0.0.1:8069:8069"
     volumes:
@@ -73,24 +78,118 @@ volumes:
   db-data:
 ```
 
+### Database Connection
+
+Odoo supports PostgreSQL database only.
+
+* `PGHOST` Name of the database container.
+* `PGUSER` Database username.
+* `PGPASSWORD` Database user password.
+* `PGPORT` Postgres server port. Default is `5432`.
+
+### Module Repos
+
+The entrypoint script can clone git repositories.
+
+* `GIT_SSH_PUBLIC_KEY` Public key for SSH connection.
+* `GIT_SSH_PRIVATE_KEY` Private key for SSH connection.
+* `ADDONS_GIT_REPOS` Comma seperated list of git clone urls appended with `#` and branch name.
+
+### Addons Path
+
+The entrypoint script searches for module folders in the addons path and creates a new addons path.
+
+* `ODOO_ADDONS_PATH` Comma seperated list of container paths pointing to addon folders.
+
+### Initialize
+
+If enabled the entrypoint script initializes the Odoo database.
+
+* `ODOO_DATABASE` Name of the Odoo database. No default is set.
+* `ODOO_INIT` Enable to initalise the database. Default is `False`.
+* `ODOO_INIT_LANG` Language used for database initialisation. Default is `en_US`.
+* `ODOO_INIT_ADDONS` Provide comma separated list of modules for database initialisation. Default is `web`.
+
+### Server Environment
+
+The Odoo server can be configured using the following env vars.
+
+* `ENVIRONMENT` Provide an environment name. Can be accessed with `config.get("environment")`.
+* `PIP_INSTALL` Comma seperated list of python packages.
+* `SERVER_WIDE_MODULES` Comma separated list of modules to load with server.
+* `SESSION_DB_URI` Connection string for storing session data in database.
+* `PROXY_MODE` Enable server proxy mode. Default is `False`.
+* `LOG_LEVEL` Set the logging level. Default is `info`.
+
+### Database Manager
+
+The Odoo database manager is disabled by default.
+
+* `LIST_DB` Enable the database manager. Default is `False`.
+* `ADMIN_PASSWD` Master password for database manager. Default is `odoo`.
+* `DB_FILTER` Set filter for database name. Default is `.*`.
+
+### Process Limits
+
+Odoo is a multi-threaded Python process.
+
+* `WORKERS` Define how many workers should be spawned. Default is `0`.
+* `LIMIT_REQUEST` Maximum number of requests per worker. Default is `65536`.
+* `LIMIT_TIME_CPU` Maximum cpu time per request. Default is `60`.
+* `LIMIT_TIME_REAL` Maximum real time per request. Default is `120`.
+
+### Container Paths
+
+Here are the most important container paths.
+
+* `/etc/odoo` Contains the `odoo.conf` and `odoo.conf.template` files.
+* `/var/lib/odoo/filestore` For every database name Odoo create a filestore.
+* `/var/lib/odoo/git` The cloned module repos are stored here.
+* `/opt/odoo-venv` This is where Python packages are installed.
+* `/mnt/extra-addons` Module folders are loaded from this path by default.
+
+### Mainfestoo
+
+With the Manifestoo cli you can query the module manifests files.
+
+List all modules:
+
+```bash
+docker exec odoo manifestoo --select-found list
+```
+
+### click-odoo
+
+With click-odoo you can manage the Odoo database.
+
+* `CLICK_ODOO_UPDATE` If enabled click-odoo is used to update modules that have changed. Requires `ODOO_DATABASE` and `ODOO_ADDONS_PATH`. Default is `False`.
+
+Update all modules manually:
+
+```bash
+docker exec odoo bash -c "click-odoo-update \$(grep addons_path /etc/odoo/odoo.conf | sed 's/addons_path = /--addons-path=/') -d odoo
+```
+
 ## Develop
+
+As with every Docker image this image can be updated.
 
 ### Install packages
 
-Extend the image with additional python packages:
+Extend the image with Python packages.
 
 ```dockerfile
-FROM mintsystem/odoo:16.0.20241125
+FROM mintsystem/odoo:16.0.20241220
 
 RUN pip install prometheus-client astor fastapi python-multipart ujson a2wsgi parse-accept-language pyjwt
 ```
 
 ### Add custom Odoo conf
 
-Copy a custom Odoo conf file to the image:
+Copy a custom Odoo conf file to the image.
 
 ```dockerfile
-FROM mintsystem/odoo:16.0.20241125
+FROM mintsystem/odoo:16.0.20241220
 
 COPY ./odoo.conf.template /etc/odoo/
 ```
