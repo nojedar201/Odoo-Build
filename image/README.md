@@ -11,7 +11,7 @@ A better Odoo image.
 - Store session information in database
 - Get environment name from server config
 - Initialize database with selected modules
-- Built-in [manifestoo](https://github.com/acsone/manifestoo) and [click-odoo-contrib](https://github.com/acsone/click-odoo-contrib)
+- Built-in [Manifestoo](https://github.com/acsone/manifestoo) and [click-odoo-contrib](https://github.com/acsone/click-odoo-contrib)
 
 Source: <https://github.com/Mint-System/Odoo-Build/tree/16.0/build>
 
@@ -44,7 +44,7 @@ services:
       ODOO_INIT_LANG: de_CH
       ENVIRONMENT: production
       PIP_INSTALL: prometheus-client
-      SERVER_WIDE_MODULES: web,session_db
+      SERVER_WIDE_MODULES: web,session_db,module_change_auto_install
       SESSION_DB_URI: postgres://odoo:odoo@db/16.0
       PROXY_MODE: True
       LOG_LEVEL: debug
@@ -55,6 +55,7 @@ services:
       LIMIT_REQUEST: 16384
       LIMIT_TIME_CPU: 300
       LIMIT_TIME_REAL: 600
+      MODULE_AUTO_INSTALL_DISABLED: odoo_test_xmlrunner
       CLICK_ODOO_UPDATE: True
     ports:
       - "127.0.0.1:8069:8069"
@@ -148,9 +149,15 @@ Here are the most important container paths.
 * `/opt/odoo-venv` This is where Python packages are installed.
 * `/mnt/extra-addons` Module folders are loaded from this path by default.
 
+### Disable Auto Install
+
+With `module_change_auto_install` module you can disable the auto installation of specific modules.
+
+* `MODULE_AUTO_INSTALL_DISABLED` Comma separated list of modules that should be auto installed. Requires `module_change_auto_install` in `SERVER_WIDE_MODULES`.
+
 ### Mainfestoo
 
-With the Manifestoo cli you can query the module manifests files.
+With the [Manifestoo](https://github.com/acsone/manifestoo) cli you can query the module manifest files.
 
 List all modules:
 
@@ -160,7 +167,7 @@ docker exec odoo manifestoo --select-found list
 
 ### click-odoo
 
-With click-odoo you can manage the Odoo database.
+With [click-odoo](https://github.com/acsone/click-odoo) you can manage the Odoo database.
 
 * `CLICK_ODOO_UPDATE` If enabled click-odoo is used to update modules that have changed. Requires `ODOO_DATABASE` and `ODOO_ADDONS_PATH`. Default is `False`.
 
