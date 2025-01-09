@@ -1,19 +1,21 @@
-# [Odoo Build](https://odoo.build/)
+# [Mint System Odoo Image](https://odoo.build/image/)
 
 A better Odoo image.
 
-- Ships with python 3.11
-- Odoo source is based on exact [revision](https://odoo.build/revisions.html)
-- Setup `odoo.conf` with environment vars
-- Clone addons from git repos
-- Install pip packages without building the image
-- Detect addons in nested module folders
-- Store session information in database
-- Get environment name from server config
-- Initialize database with selected modules
-- Built-in [Manifestoo](https://github.com/acsone/manifestoo) and [click-odoo-contrib](https://github.com/acsone/click-odoo-contrib)
+- 🐍 Ships with python 3.11
+- 📦 Uses [uv](https://docs.astral.sh/uv/) to manage python
+- 🔄 Odoo source is based on exact [revision](https://odoo.build/revisions.html)
+- 💎 Image build is reproducible
+- ⚙️ Setup `odoo.conf` with environment vars
+- 🌱 Clone addons from git repos
+- 🛠️ Install python packages without building the image
+- 📂 Detect addons in nested module folders
+- 💾 Store session information in database
+- 🖥️ Get environment name from server config
+- 🗄️ Initialize database with selected modules
+- 📜 Built-in [Manifestoo](https://github.com/acsone/manifestoo) and [click-odoo-contrib](https://github.com/acsone/click-odoo-contrib)
 
-Source: <https://github.com/Mint-System/Odoo-Build/tree/16.0/build>
+Source: <https://github.com/Mint-System/Odoo-Build/tree/16.0/image/>
 
 ## Usage
 
@@ -43,8 +45,8 @@ services:
       ODOO_INIT: True
       ODOO_INIT_LANG: de_CH
       ENVIRONMENT: production
-      PIP_INSTALL: prometheus-client
-      SERVER_WIDE_MODULES: web,session_db,module_change_auto_install
+      PYTHON_INSTALL: prometheus-client
+      SERVER_WIDE_MODULES: session_db,module_change_auto_install
       SESSION_DB_URI: postgres://odoo:odoo@db/16.0
       PROXY_MODE: True
       LOG_LEVEL: debug
@@ -116,7 +118,7 @@ If enabled the entrypoint script initializes the Odoo database.
 The Odoo server can be configured using the following env vars.
 
 * `ENVIRONMENT` Provide an environment name. Can be accessed with `config.get("environment")`.
-* `PIP_INSTALL` Comma seperated list of python packages.
+* `PYTHON_INSTALL` Comma seperated list of python packages.
 * `SERVER_WIDE_MODULES` Comma separated list of modules to load with server.
 * `SESSION_DB_URI` Connection string for storing session data in database.
 * `PROXY_MODE` Enable server proxy mode. Default is `False`.
@@ -177,9 +179,9 @@ Update all modules manually:
 docker exec odoo bash -c "click-odoo-update \$(grep addons_path /etc/odoo/odoo.conf | sed 's/addons_path = /--addons-path=/') -d odoo
 ```
 
-## Develop
+## Extend
 
-As with every Docker image this image can be updated.
+This image can be customized and extended as needed.
 
 ### Install packages
 
@@ -191,6 +193,16 @@ FROM mintsystem/odoo:16.0.20241220
 RUN pip install prometheus-client astor fastapi python-multipart ujson a2wsgi parse-accept-language pyjwt
 ```
 
+Or with apt packages.
+
+```dockerfile
+FROM mintsystem/odoo:16.0.20241220
+
+USER root
+RUN apt-get update && apt-get install -y libgl1-mesa-glx poppler-utils tesseract-ocr
+USER odoo
+```
+
 ### Add custom Odoo conf
 
 Copy a custom Odoo conf file to the image.
@@ -200,6 +212,10 @@ FROM mintsystem/odoo:16.0.20241220
 
 COPY ./odoo.conf.template /etc/odoo/
 ```
+
+### Develop
+
+See [Odoo Build > Build and publish Odoo image](https://odoo.build/#build-and-publish-odoo-image) for details.
 
 ## Troubleshooting
 

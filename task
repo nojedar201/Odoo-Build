@@ -29,7 +29,7 @@ function help-table() {
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "create-revision" "[revision]" "Create new Odoo revision."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "create-nextcloud-env" "[env]" "Create env file for Nextcloud instance."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "create-odoo-env" "[env]" "Create env file for Odoo Instance."
-    printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "disable-auto-install" "" "Disable auto install for enterprise modules."
+    printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "create-snippet" "[id]" "Create snippet from template."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "disable-mailserver" "[env]" "Disable mail server settings via xmlrpc."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "disable-snippet" "[env][path]" "Disable snippet definition."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "docker-login" "" "Setup Docker Hub login credentials."
@@ -52,6 +52,7 @@ function help-table() {
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "git-mig-branch" "[path]" "Create migration branch for Odoo module."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "git-submodule-add" "[url] [path]" "Add git submodule."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "git-submodule-checkout" "" "Checkout submodule commits."
+    printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "git-submodule-ls" "" "List submodule path space separated."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "git-submodule-list" "" "List path and url of submodules."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "git-submodule-init" "" "Init submodules listed in the .gitmodules file."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "git-submodule-pull" "" "Pull all submodules listed in the .gitmodules file."
@@ -164,12 +165,12 @@ fi
 if [[ "$(uname)" == "Darwin" ]]; then
     OS_RELEASE="Darwin"
     TARGETARCH=linux/arm64/v8
-    PIP_INOTIFY=""
+    PYTHON_NOTIFY=""
     OS_OPEN="open"
 else
     OS_RELEASE=$(awk -F= '/^NAME/{print $2}' /etc/os-release | tr -d '"')
     TARGETARCH=amd64
-    PIP_INOTIFY="inotify"
+    PYTHON_NOTIFY="inotify"
     OS_OPEN="xdg-open"
 fi
 
@@ -191,11 +192,9 @@ function info() {
 }
 
 function version() {
-    pyenv -v
-    python -V
-    pip -V
+    activate-venv
+    uv --version
     wkhtmltopdf -V
-    psql -V
     docker -v
     docker compose version
     minikube version
@@ -213,15 +212,14 @@ function generate-admin-passwd() {
 
 function init-venv() {
     if [ ! -d "venv$GIT_BRANCH" ]; then
-        echo "Init venv$GIT_BRANCH with $(python --version)."
-        python -m venv "venv$GIT_BRANCH"
+        echo "Init venv$GIT_BRANCH with $(uv --version)."
+        uv venv "venv$GIT_BRANCH"
     fi
 }
 
 function activate-venv() {
     echo "Source virtualenv venv$GIT_BRANCH."
     source "venv$GIT_BRANCH/bin/activate"
-
     echo "$(python --version) is active."
 }
 
@@ -539,11 +537,6 @@ function list-modules() {
     echo $(get-modules "$1" basename | tr "," "\n")
 }
 
-function disable-auto-install() {
-    echo "Disable auto install for all enterprise modules."
-    find . -type f -name '__manifest__.py' -exec sed -i'' $'s/\'auto_install\': True,/\'auto_install\': False,/g' {} +
-}
-
 # Docker Commands
 
 function build() {
@@ -560,7 +553,7 @@ function build() {
     fi
 
     echo "Run Docker build with tag ${DOCKER_REGISTRY}${DOCKER_TAG} and $DOCKERFILE"
-    docker build . -f "$DOCKERFILE" --build-arg ODOO_VERSION="$GIT_BRANCH" --build-arg ODOO_DATE="$ODOO_DATE" --build-arg TARGETARCH="$TARGETARCH" --build-arg ODOO_IMAGE="${DOCKER_REGISTRY}${DOCKER_TAG}" -t "${DOCKER_REGISTRY}${DOCKER_TAG}"
+    SOURCE_DATE_EPOCH=$(git -C odoo log -1 --pretty=%ct) docker build . -f "$DOCKERFILE" --build-arg ODOO_VERSION="$GIT_BRANCH" --build-arg ODOO_DATE="$ODOO_DATE" --build-arg TARGETARCH="$TARGETARCH" --build-arg ODOO_IMAGE="${DOCKER_REGISTRY}${DOCKER_TAG}" -t "${DOCKER_REGISTRY}${DOCKER_TAG}"
 }
 
 function docker-login() {
@@ -659,15 +652,20 @@ function install-native() {
     if [[ "$OS_RELEASE" =~ ^(Ubuntu|Debian|Pop!_OS)$ ]]; then
 
         # Source: https://gist.github.com/faniska/37f896d5e9de5fee925925d7caf3cb9e
-        echo "Install wkhtmltopdf"
-        sudo apt remove wkhtmltopdf
-        wget https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.4/wkhtmltox-0.12.4_linux-generic-amd64.tar.xz
-        tar xvf wkhtmltox*.tar.xz
-        sudo mv wkhtmltox/bin/wkhtmlto* /usr/bin
-        rm -rf wkhtmltox wkhtmltox-0.12.4_linux-generic-amd64.tar.*
+        INSTALLED_VERSION=$(wkhtmltopdf --version 2>&1 | grep -Po '^wkhtmltopdf \K[\d.]+')
+        if [ "$INSTALLED_VERSION" != "0.12.4" ]; then
+            echo "Install wkhtmltopdf"
+            sudo apt remove wkhtmltopdf
+            wget https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.4/wkhtmltox-0.12.4_linux-generic-amd64.tar.xz
+            tar xvf wkhtmltox*.tar.xz
+            sudo mv wkhtmltox/bin/wkhtmlto* /usr/bin
+            rm -rf wkhtmltox wkhtmltox-0.12.4_linux-generic-amd64.tar.*
+        else
+            echo "wkhtmltopdf version is already 0.12.4"
+        fi
 
         echo "Install python-ldap and psycopg2 build dependencies"
-        sudo apt-get install -y libsasl2-dev python-dev libldap2-dev libssl-dev libpq-dev
+        sudo apt-get install -y libsasl2-dev libldap2-dev libssl-dev libpq-dev python3-dev
 
         echo "Install xmllint"
         sudo apt install -y libxml2-utils
@@ -680,7 +678,7 @@ function install-native() {
         brew install wkhtmltopdf libsasl2 openldap openssl libxml2
         
         echo "Install the binary version of psycopg2"
-        pip install psycopg2-binary --force
+        uv pip install psycopg2-binary --force
 
         echo "Add LDFLAGS to .env file"
         if ! grep -qxF 'LDFLAGS=-L/opt/homebrew/lib/' .env; then
@@ -694,14 +692,15 @@ function install-native() {
     fi
 
     echo "Install Odoo development tools"
-    pip install ${PIP_INOTIFY}
-    pip install -r requirements.txt
+    uv pip install ${PYTHON_NOTIFY}
+    uv pip install -r requirements.txt
 
     if [ -f "odoo/requirements.txt" ]; then
         echo "Install Odoo dependencies"
-        pip install -r odoo/requirements.txt
+        uv pip install -r odoo/requirements.txt
 
         echo "Configure Odoo as python package"
+        uv pip install pip
         pip install -e odoo
     fi
 }
@@ -866,7 +865,7 @@ function test-docker() {
     export ODOO_INIT=True
     export ODOO_INIT_LANG=de_CH
     export ODOO_INIT_ADDONS=server_environment_ir_config_parameter,module_auto_update,prometheus_exporter,mail_server_filter,git_base,contacts,web_enterprise
-    export PIP_INSTALL=prometheus-client,manifestoo
+    export PYTHON_INSTALL=prometheus-client,manifestoo
     export SERVER_WIDE_MODULES=web,session_db,module_change_auto_install
     export SESSION_DB_URI=postgres://odoo:odoo@db/test
     export MODULE_AUTO_INSTALL_DISABLED=odoo_test_xmlrunner
@@ -879,12 +878,10 @@ function test-docker() {
     sed -i -E 's/(firstname = fields)/secondname = fields.Char();\1/' oca/partner-contact/partner_firstname/models/res_partner.py
     restart odoo
     while ! curl --fail -s http://localhost:8069; do sleep 1; done
+
     echo "Check if auto upgrade was successful."
     scripts/odooctl --method "search_one" --model "ir.model.fields" --domain "[('name', '=', 'secondname')]"
-    docker-odoo-uninstall -d test -u partner_firstname
-    restart odoo
-    while ! curl --fail -s http://localhost:8069; do sleep 1; done
-
+    
     echo "Setup and test RPC credentials."
     export ODOO_URL="http://localhost:8069"
     export ODOO_USERNAME=admin
@@ -900,8 +897,6 @@ function test-docker() {
     remove-snippet test snippets/base.view_partner_form.show_type.xml
 
     echo "Test Odoo scripts."
-    docker-odoo-list
-    docker-odoo-cloc -d test
     docker-odoo-backup -d test
     docker-odoo-drop -d test
     docker-odoo-restore -d test -f /var/tmp/test.zip
@@ -909,6 +904,7 @@ function test-docker() {
 
     echo "Cleanup test environment."
     remove-env test
+    git -C oca/partner-contact checkout .
 }
 
 # Kubernetes Commands
@@ -1022,8 +1018,8 @@ function drop-db() {
         DATABASE="$ODOO_DATABASE"
     fi
 
-    psql "postgres://odoo:odoo@localhost:5432/postgres" -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '$DATABASE';"
-    psql "postgres://odoo:odoo@localhost:5432/postgres" -c "DROP DATABASE \"$DATABASE\";"
+    docker exec -i db psql "postgres://odoo:odoo@localhost:5432/postgres" -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '$DATABASE';"
+    docker exec -i db psql "postgres://odoo:odoo@localhost:5432/postgres" -c "DROP DATABASE \"$DATABASE\";"
 }
 
 function setup-mail() {
@@ -1063,8 +1059,8 @@ function set-admin() {
         DATABASE="$ODOO_DATABASE"
     fi
 
-    psql "postgres://odoo:odoo@localhost:5432/$DATABASE" -c "UPDATE res_users SET active=true,password='\$pbkdf2-sha512\$25000\$JuScEwIg5JzTGqNUivFeqw\$yWTOcix2Afr3XGP2NPY7w4w49e9vpsu14NRndDYXAkbtMF4zkrmx6inVsoLl0zZY30xI/0GzhwonWsK9TUmjWA' WHERE id=2;"
-    psql "postgres://odoo:odoo@localhost:5432/$DATABASE" -c "SELECT login, password FROM res_users WHERE id=2;"
+    docker exec -i db psql "postgres://odoo:odoo@localhost:5432/$DATABASE" -c "UPDATE res_users SET active=true,password='\$pbkdf2-sha512\$25000\$JuScEwIg5JzTGqNUivFeqw\$yWTOcix2Afr3XGP2NPY7w4w49e9vpsu14NRndDYXAkbtMF4zkrmx6inVsoLl0zZY30xI/0GzhwonWsK9TUmjWA' WHERE id=2;"
+    docker exec -i db psql "postgres://odoo:odoo@localhost:5432/$DATABASE" -c "SELECT login, password FROM res_users WHERE id=2;"
 }
 
 function clear-assets() {
@@ -1074,8 +1070,8 @@ function clear-assets() {
     fi
 
     echo "Delete these assets for $DATABASE:"
-    psql "postgres://odoo:odoo@localhost/$DATABASE" -c "select id,name from ir_attachment where res_model='ir.ui.view' and name like '%assets_%';"
-    psql "postgres://odoo:odoo@localhost/$DATABASE" -c "delete from ir_attachment where res_model='ir.ui.view' and name like '%assets_%';"
+    docker exec -i db psql "postgres://odoo:odoo@localhost/$DATABASE" -c "select id,name from ir_attachment where res_model='ir.ui.view' and name like '%assets_%';"
+    docker exec -i db psql "postgres://odoo:odoo@localhost/$DATABASE" -c "delete from ir_attachment where res_model='ir.ui.view' and name like '%assets_%';"
 }
 
 function clear-views() {
@@ -1085,16 +1081,16 @@ function clear-views() {
     fi
 
     echo "Archive views with prefix 'mint_system'."
-    psql "postgres://odoo:odoo@localhost/$DATABASE" -c  "SELECT id,name from ir_ui_view WHERE name like '%mint_system%';"
-    psql "postgres://odoo:odoo@localhost/$DATABASE" -c  "UPDATE ir_ui_view SET active=false WHERE name like '%mint_system%';"
+    docker exec -i db psql "postgres://odoo:odoo@localhost/$DATABASE" -c  "SELECT id,name from ir_ui_view WHERE name like '%mint_system%';"
+    docker exec -i db psql "postgres://odoo:odoo@localhost/$DATABASE" -c  "UPDATE ir_ui_view SET active=false WHERE name like '%mint_system%';"
 
     echo "Archive views with prefix 'Odoo Studio:'."
-    psql "postgres://odoo:odoo@localhost/$DATABASE" -c  "SELECT id,name from ir_ui_view WHERE name like '%Odoo Studio:%';"
-    psql "postgres://odoo:odoo@localhost/$DATABASE" -c  "UPDATE ir_ui_view SET active=false WHERE name like '%Odoo Studio:%';"
+    docker exec -i db psql "postgres://odoo:odoo@localhost/$DATABASE" -c  "SELECT id,name from ir_ui_view WHERE name like '%Odoo Studio:%';"
+    docker exec -i db psql "postgres://odoo:odoo@localhost/$DATABASE" -c  "UPDATE ir_ui_view SET active=false WHERE name like '%Odoo Studio:%';"
 
     echo "Delete all active views for $DATABASE in $CONTAINER :"
-    psql "postgres://odoo:odoo@localhost/$DATABASE" -c  "DELETE FROM report_layout WHERE view_id IN (SELECT id FROM ir_ui_view WHERE active = TRUE);"
-    psql "postgres://odoo:odoo@localhost/$DATABASE" -c  "WITH RECURSIVE views_to_delete AS (SELECT id, inherit_id FROM ir_ui_view WHERE active = TRUE AND inherit_id IS NULL UNION ALL SELECT v.id, v.inherit_id FROM ir_ui_view v JOIN views_to_delete p ON v.inherit_id = p.id) DELETE FROM ir_ui_view WHERE id IN (SELECT id FROM views_to_delete);"
+    docker exec -i db psql "postgres://odoo:odoo@localhost/$DATABASE" -c  "DELETE FROM report_layout WHERE view_id IN (SELECT id FROM ir_ui_view WHERE active = TRUE);"
+    docker exec -i db psql "postgres://odoo:odoo@localhost/$DATABASE" -c  "WITH RECURSIVE views_to_delete AS (SELECT id, inherit_id FROM ir_ui_view WHERE active = TRUE AND inherit_id IS NULL UNION ALL SELECT v.id, v.inherit_id FROM ir_ui_view v JOIN views_to_delete p ON v.inherit_id = p.id) DELETE FROM ir_ui_view WHERE id IN (SELECT id FROM views_to_delete);"
 }
 
 function convert-database() {
@@ -1235,7 +1231,7 @@ function install-requirements() {
     else
         activate-venv
         echo "Installing python packages in virutal env ..."
-        pip install -r "$FILE_PATH"
+        uv pip install -r "$FILE_PATH"
     fi
 }
 
@@ -1613,6 +1609,16 @@ function reset-views() {
     odoo shell -d "$DATABASE" --config "$ODOO_RC" --addons-path="$ADDONS_PATH" --no-http
 }
 
+function create-snippet() {
+    if test -z "$1"; then echo "\$1 is empty."; exit; fi
+
+    export INHERIT_ID=$(echo "$1" | cut -d. -f1-2)
+    FILE="snippets/$1.xml"
+
+    echo "Create snippet from template: $FILE"
+    envsubst '$INHERIT_ID' < templates/snippet.xml > "$FILE"
+}
+
 function install-snippet() {
     if test -z "$1"; then echo "\$1 is empty."; exit; fi
     if test -z "$2"; then echo "\$2 is empty."; exit; fi
@@ -1800,40 +1806,46 @@ function git-submodule-init() {
     # Using "git submodule update --init --recursive" is not possible as modules are registered from different branches
     SUBMODULES=$(git-submodule-ls)
     for SUBMODULE in $SUBMODULES; do
-        echo "Initializing submodule: $SUBMODULE"
-        git submodule update --init "$SUBMODULE"
+        SHALLOW=$(git config --file .gitmodules --get-regexp submodule."$SUBMODULE".shallow | awk '{ print $2 }')
+        if [ "$SHALLOW" = "true" ]; then
+            echo "Initializing submodule: $SUBMODULE (shallow)"
+            git submodule update --init --depth 1 "$SUBMODULE"
+        else
+            echo "Initializing submodule: $SUBMODULE"
+            git submodule update --init "$SUBMODULE"
+        fi
     done
 }
 
 function git-submodule-pull() {
     echo "Pull git submodules"
-    SUBMODULES=$(git config --file .gitmodules --get-regexp url | sed -e 's/submodule.//g' -e 's/.url.*//g')
+    SUBMODULES=$(git-submodule-ls)
     for SUBMODULE in $SUBMODULES; do
         echo "Pull git submodule: $SUBMODULE"
+        git -C "$SUBMODULE" stash
         UPDATE=$(git config submodule."$SUBMODULE".update)
-        CWD=$(pwd)
-        cd "$SUBMODULE" || exit
-        git stash
         if [ -z "$UPDATE" ]; then
-            git pull origin "$GIT_BRANCH"
+            git -C "$SUBMODULE" pull origin "$GIT_BRANCH"
         fi;
-        cd "$CWD" || exit
     done
 }
 
 function git-submodule-checkout() {
     echo "Checkout submodule commits."
-
-    # The --depth flag cannot be used when working on multiple branches in submodules
     SUBMODULES=$(git-submodule-ls)
     for SUBMODULE in $SUBMODULES; do
-        echo "Update git submodule: $SUBMODULE"
+        SHALLOW=$(git config --file .gitmodules --get-regexp submodule."$SUBMODULE".shallow | awk '{ print $2 }')
         COMMIT_HASH=$(git ls-tree HEAD "$SUBMODULE" | awk '{print $3}')
-        CWD=$(pwd)
-        cd "$SUBMODULE" || exit
-        git stash
-        git checkout "$COMMIT_HASH"
-        cd "$CWD" || exit
+        if [ "$SHALLOW" = "true" ]; then
+            echo "Update git submodule: $SUBMODULE (shallow)"
+            git -C "$SUBMODULE" stash
+            git -C "$SUBMODULE" fetch origin "$COMMIT_HASH"
+            git -C "$SUBMODULE" checkout "$COMMIT_HASH"
+        else
+            echo "Update git submodule: $SUBMODULE"
+            git -C "$SUBMODULE" stash
+            git -C "$SUBMODULE" checkout "$COMMIT_HASH"
+        fi
     done
 }
 
@@ -1846,19 +1858,15 @@ function git-submodule-switch() {
     SUBMODULES=$(git-submodule-ls)
     for SUBMODULE in $SUBMODULES; do
         echo "Switch git submodule branch to $GIT_BRANCH: $SUBMODULE"
-        CWD=$(pwd)
-        cd "$SUBMODULE" || exit
-        git stash
-        git switch "$GIT_BRANCH"
-        cd "$CWD" || exit
+        git -C "$SUBMODULE" stash
+        git -C "$SUBMODULE" switch "$GIT_BRANCH"
     done
 }
 
 function git-submodule-sync() {
-    echo "Switch, pull and checkout submodules."
+    echo "Switch and pull submodules."
     git-submodule-switch
     git-submodule-pull
-    git-submodule-checkout
 }
 
 function git-feature-branch(){
@@ -1940,7 +1948,7 @@ function checkout-revision() {
 
     echo "Update revision var in .env file."
     if grep -q "ODOO_REVISION" .env; then
-        sed -i -e "s/^ODOO_REVISION=${ODOO_VERSION}.*/ODOO_REVISION=${ODOO_REVISION}/" .env
+        sed -i -e "s/^ODOO_REVISION=.*/ODOO_REVISION=${ODOO_REVISION}/" .env
     else
         echo "ODOO_REVISION=${ODOO_REVISION}" >> .env
     fi
@@ -2049,8 +2057,8 @@ case "$1" in
     create-revision)
         create-revision "$2"
         ;;
-    disable-auto-install)
-        disable-auto-install
+    create-snippet)
+        create-snippet "$2"
         ;;
     disable-mailserver)
         disable-mailserver "$2"
@@ -2111,6 +2119,9 @@ case "$1" in
         ;;
     git-submodule-delete)
         git-submodule-delete
+        ;;
+    git-submodule-ls)
+        git-submodule-ls
         ;;
     git-submodule-list)
         git-submodule-list

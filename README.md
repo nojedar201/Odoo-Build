@@ -16,7 +16,7 @@ This projects provides a highly opinionated way to manage and develop Odoo. It f
 * 🤝 **Community Repos**: The most common community repos are checked out when setting up the project.  
 * ✂️ **Customizing Snippets**: Create [snippets](./snippets.md) and push them to an Odoo database.  
 * 🕰️ **Odoo Revisions**: Snapshot the Odoo source at a specific date. See [revisions](./revisions.md) for details.  
-* 📦 **Odoo Image**: Build and publish a custom Odoo Docker image. See [README](./image/README.md) for details.  
+* 📦 **Docker Image**: Build and publish a custom Odoo Docker image. See [README](./image/README.md) for details.  
 * ☸️ **Kubernetes**: Deploy Odoo and Postgres to a local Kubernetes cluster.  
 * 🔑 **Credentials**: Manage login credentials for Odoo and Nextcloud.  
 * ⬆️ **Odoo Upgrade**: Helper commands to ease the Odoo upgrade process.  
@@ -27,9 +27,8 @@ This projects provides a highly opinionated way to manage and develop Odoo. It f
 The Odoo development environment has the following requirements:
 
 * [Docker](https://docs.docker.com/engine/install/)
-* Install Python 3.11+ with [pyenv](https://github.com/pyenv/pyenv)
-* Install [PostgreSQL](https://www.postgresql.org/download/)
-* bash/zsh alias `task='./task'` with optional [bash](https://github.com/janikvonrotz/dotfiles/blob/master/bash/completions/task_completions)/[zsh](https://github.com/janikvonrotz/dotfiles/blob/master/oh-my-zsh/completions/_task) completion.
+* Install Python 3.11+ with [uv](https://docs.astral.sh/uv/)
+* bash/zsh alias `alias task='./task'` with optional [bash](https://github.com/janikvonrotz/dotfiles/blob/master/bash/completions/task_completions)/[zsh](https://github.com/janikvonrotz/dotfiles/blob/master/oh-my-zsh/completions/_task) completion.
 
 You can also use [Nix](https://nixos.org/) to setup the development requirements.
 
@@ -72,22 +71,15 @@ Run Odoo from source. Currently supported OS: Ubuntu, Debian, Pop!_OS, Darwin, W
 
 #### Setup Odoo environment
 
-Init submodules and checkout the Odoo version.
+Sync the submodule branch.
 
 ```bash
-task git-submodule-init
 task git-submodule-sync
 ```
 
 #### Setup Python environment
 
-Install Python and pip.
-
-```bash
-pyenv install
-```
-
-Install the python dependencies.
+Install the Python and dependencies.
 
 ```bash
 task install-native
@@ -95,7 +87,7 @@ task install-native
 
 #### Initialize and start Odoo from source
 
-Run database container only.
+Start database container only.
 
 ```bash
 task start db
@@ -379,7 +371,7 @@ ImportError: libldap_r-2.4.so.2: cannot open shared object file: No such file or
 
 Reinstall with pip flags.
 
-```
+```bash
 pip install python-ldap --force-reinstall --no-binary python-ldap
 ```
 

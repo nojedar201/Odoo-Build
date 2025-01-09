@@ -18,6 +18,8 @@ All notable changes to this project will be documented in this file. The format 
 * Image supports auto update modules with click-odoo.
 * New commands to manage snippets `disable-snippet` and `remove-snippet`.
 * Support `MODULE_AUTO_INSTALL_DISABLED` for native path.
+* Shallow checkout for submodules with option `shallow = true`.
+* Replace `pip` with `uv`.
 
 ### Updated
 
@@ -25,6 +27,7 @@ All notable changes to this project will be documented in this file. The format 
 * Refactored `odooctl` cli.
 * Added emojies to the README feature list.
 * Rename `build` folder to `image`.
+* Moved selected Python packages to requirements.txt.
 
 ### Fixed
 
@@ -36,6 +39,8 @@ All notable changes to this project will be documented in this file. The format 
 * Removed `scripts/jsonrpc`.
 * Removed commands `get-jsonrpc-session`, `odoo-checkin` and `odoo-checkout`.
 * Removed `odoorpc` from requirements.txt.
+* Removed packages for `psql`.
+* Removed command `disable-auto-install`.
 
 ## 2024-12-16
 
