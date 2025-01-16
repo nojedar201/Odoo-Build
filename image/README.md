@@ -2,18 +2,19 @@
 
 A better Odoo image.
 
-- 🐍 Ships with python 3.11
-- 📦 Uses [uv](https://docs.astral.sh/uv/) to manage python
-- 🔄 Odoo source is based on exact [revision](https://odoo.build/revisions.html)
-- 💎 Image build is reproducible
-- ⚙️ Setup `odoo.conf` with environment vars
-- 🌱 Clone addons from git repos
-- 🛠️ Install python packages without building the image
-- 📂 Detect addons in nested module folders
-- 💾 Store session information in database
-- 🖥️ Get environment name from server config
-- 🗄️ Initialize database with selected modules
-- 📜 Built-in [Manifestoo](https://github.com/acsone/manifestoo) and [click-odoo-contrib](https://github.com/acsone/click-odoo-contrib)
+- 🐍 Ships with python 3.11.
+- 📦 Uses [uv](https://docs.astral.sh/uv/) to manage python.
+- 🔄 Odoo source is based on exact [revision](https://odoo.build/revisions.html).
+- 💎 Image build is reproducible.
+- ⚙️ Setup `odoo.conf` with environment vars.
+- 🌱 Clone addons from git repos.
+- 🛠️ Install python packages without building the image.
+- 📂 Detect addons in nested module folders.
+- 💾 Store session information in database.
+- 🖥️ Get environment name from server config.
+- 🗄️ Initialize database with selected modules.
+- 📜 Built-in [Manifestoo](https://github.com/acsone/manifestoo) and [click-odoo-contrib](https://github.com/acsone/click-odoo-contrib).
+- 🌈 Multiplatform image supports `amd64` and `arm64`.
 
 Source: <https://github.com/Mint-System/Odoo-Build/tree/16.0/image/>
 
@@ -23,7 +24,7 @@ Source: <https://github.com/Mint-System/Odoo-Build/tree/16.0/image/>
 services:
   odoo:
     container_name: odoo
-    image: mintsystem/odoo:16.0.20241220
+    image: mintsystem/odoo:16.0.20250106
     depends_on:
       - db
     environment:
@@ -31,6 +32,18 @@ services:
       PGUSER: odoo
       PGPASSWORD: odoo
       PGPORT: 5432
+      MAIL_DEFAULT_FROM: test
+      MAIL_CATCHALL_DOMAIN: mint-system.ch
+      MAIL_CATCHALL_ALIAS: test@mint-system.ch
+      ODOO_MAIL_SMTP_HOST: mail.infomaniak.com
+      ODOO_MAIL_SMTP_PORT: 587
+      ODOO_MAIL_SMTP_ENCRYPTION: starttls
+      ODOO_MAIL_SMTP_FROM_FILTER: test@mint-system.ch
+      ODOO_MAIL_IMAP_HOST: mail.infomaniak.com
+      ODOO_MAIL_IMAP_PORT: 993
+      ODOO_MAIL_IMAP_SSL: True
+      ODOO_MAIL_USERNAME: test@mint-system.ch
+      ODOO_MAIL_PASSWORD: *****
       GIT_SSH_PUBLIC_KEY: ssh-ed25519 BBBBC3NzaC1lZDI1NTE5BBBBIDR9Ibi0mATjCyx1EYg594oFkY0rghtgo+pnFHOvAcym Mint-System-Project-MCC@github.com
       GIT_SSH_PRIVATE_KEY: |
         -----BEGIN OPENSSH PRIVATE KEY-----
@@ -44,6 +57,7 @@ services:
       ODOO_DATABASE: 16.0
       ODOO_INIT: True
       ODOO_INIT_LANG: de_CH
+      ODOO_INIT_ADDONS: server_environment_ir_config_parameter
       ENVIRONMENT: production
       PYTHON_INSTALL: prometheus-client
       SERVER_WIDE_MODULES: session_db,module_change_auto_install
@@ -51,7 +65,7 @@ services:
       PROXY_MODE: True
       LOG_LEVEL: debug
       LIST_DB: False
-      ADMIN_PASSWD: oqua9AiHeibac2pie9ei
+      ADMIN_PASSWD: *****
       DBFILTER: ^%d$
       WORKERS: 4
       LIMIT_REQUEST: 16384
@@ -89,6 +103,28 @@ Odoo supports PostgreSQL database only.
 * `PGUSER` Database username.
 * `PGPASSWORD` Database user password.
 * `PGPORT` Postgres server port. Default is `5432`.
+
+### System Parameters
+
+Define Odoo system parameters. Requires `server_environment_ir_config_parameter` to be in `ODOO_INIT_ADDONS`.
+
+* `MAIL_CATCHALL_ALIAS`: Name of the catchall mail adress. Default is `catchall`.
+* `MAIL_CATCHALL_DOMAIN`: Domain name of of the catchall mail addres
+* `MAIL_DEFAULT_FROM`: From name for outgoing mails. Default is `notification`.
+
+### Incoming and Outgoing Mail-Server
+
+Load mail server configuration from environment vars.
+
+* `ODOO_MAIL_SMTP_HOST`: If set Odoo sends mails to this host.
+* `ODOO_MAIL_SMTP_PORT`: SMTP port. Default is `587`.
+* `ODOO_MAIL_SMTP_ENCRYPTION`: SMTP encryption type. Default is `starttls`.
+* `ODOO_MAIL_SMTP_FROM_FILTER`: Send mails from this address only. Default is `""`.
+* `ODOO_MAIL_IMAP_HOST`: If set Odoo fetches mails from this host.
+* `ODOO_MAIL_IMAP_PORT`: IMAP port. Default is `993`.
+* `ODOO_MAIL_IMAP_SSL`: Enable IMAP SSL. Default is `True`.
+* `ODOO_MAIL_USERNAME`: Username of the Odoo mailbox.
+* `ODOO_MAIL_PASSWORD`: Password of the Odoo mailbox.
 
 ### Module Repos
 
@@ -179,7 +215,7 @@ Update all modules manually:
 docker exec odoo bash -c "click-odoo-update \$(grep addons_path /etc/odoo/odoo.conf | sed 's/addons_path = /--addons-path=/') -d odoo
 ```
 
-## Extend
+## Build
 
 This image can be customized and extended as needed.
 
@@ -188,15 +224,15 @@ This image can be customized and extended as needed.
 Extend the image with Python packages.
 
 ```dockerfile
-FROM mintsystem/odoo:16.0.20241220
+FROM mintsystem/odoo:16.0.20250106
 
-RUN pip install prometheus-client astor fastapi python-multipart ujson a2wsgi parse-accept-language pyjwt
+RUN uv pip install prometheus-client astor fastapi python-multipart ujson a2wsgi parse-accept-language pyjwt
 ```
 
 Or with apt packages.
 
 ```dockerfile
-FROM mintsystem/odoo:16.0.20241220
+FROM mintsystem/odoo:16.0.20250106
 
 USER root
 RUN apt-get update && apt-get install -y libgl1-mesa-glx poppler-utils tesseract-ocr
@@ -208,12 +244,12 @@ USER odoo
 Copy a custom Odoo conf file to the image.
 
 ```dockerfile
-FROM mintsystem/odoo:16.0.20241220
+FROM mintsystem/odoo:16.0.20250106
 
 COPY ./odoo.conf.template /etc/odoo/
 ```
 
-### Develop
+## Develop
 
 See [Odoo Build > Build and publish Odoo image](https://odoo.build/#build-and-publish-odoo-image) for details.
 

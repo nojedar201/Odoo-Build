@@ -6,6 +6,20 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Added
 
+* Build Docker image for `linux/amd64` and `linux/arm64`.
+* Store and restore `.env` to pass store with `pass-store-dotenv` and `pass-restore-dotenv`.
+* Init database with selected modules defined `ODOO_INIT_ADDONS`.
+* Enable mail server configuration from env vars.
+
+### Updated
+
+* Ensure `templates/task` is using `uv.
+* Split functions in `entrypoint.sh` into multiple scripts.
+
+## 2025-01-10
+
+### Added
+
 * Run the Odoo upgrade script with `upgrade-odoo`.
 * Upgrade module code with `upgrade-module`.
 * After switching version branch with `checkout` the new branch is pulled.

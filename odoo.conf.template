@@ -5,6 +5,7 @@ db_host = localhost
 db_password = odoo
 db_user = odoo
 environment = development
+running_env = development
 server_wide_modules = $SERVER_WIDE_MODULES
 modules_auto_install_disabled = $MODULE_AUTO_INSTALL_DISABLED
 
