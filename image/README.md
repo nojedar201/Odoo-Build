@@ -1,6 +1,11 @@
-# [Mint System Odoo Image](https://odoo.build/image/)
+[Mint System Odoo](https://odoo.build/image/)
+===
+
+[![Docker pulls](https://img.shields.io/docker/pulls/mintsystem/odoo)](https://hub.docker.com/r/mintsystem/odoo/)
 
 A better Odoo image.
+
+This container image is an improvement of the official Odoo image:
 
 - 🐍 Ships with python 3.11.
 - 📦 Uses [uv](https://docs.astral.sh/uv/) to manage python.
@@ -12,9 +17,10 @@ A better Odoo image.
 - 📂 Detect addons in nested module folders.
 - 💾 Store session information in database.
 - 🖥️ Get environment name from server config.
-- 🗄️ Initialize database with selected modules.
+- 📋 Initialize database with selected modules.
 - 📜 Built-in [Manifestoo](https://github.com/acsone/manifestoo) and [click-odoo-contrib](https://github.com/acsone/click-odoo-contrib).
 - 🌈 Multiplatform image supports `amd64` and `arm64`.
+- 🪴 Runs without root privileges.
 
 Source: <https://github.com/Mint-System/Odoo-Build/tree/16.0/image/>
 
@@ -41,28 +47,22 @@ services:
       ODOO_MAIL_SMTP_FROM_FILTER: test@mint-system.ch
       ODOO_MAIL_IMAP_HOST: mail.infomaniak.com
       ODOO_MAIL_IMAP_PORT: 993
-      ODOO_MAIL_IMAP_SSL: True
+      ODOO_MAIL_IMAP_SSL: "True"
       ODOO_MAIL_USERNAME: test@mint-system.ch
       ODOO_MAIL_PASSWORD: *****
       GIT_SSH_PUBLIC_KEY: ssh-ed25519 BBBBC3NzaC1lZDI1NTE5BBBBIDR9Ibi0mATjCyx1EYg594oFkY0rghtgo+pnFHOvAcym Mint-System-Project-MCC@github.com
-      GIT_SSH_PRIVATE_KEY: |
-        -----BEGIN OPENSSH PRIVATE KEY-----
-        b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZW
-        QyNTUxOQAAACA0fSG4tJgE4wssdRGIOfeKBZGNK4IbYKPqZxRzrwHMpgAAAKi5ZBaFuWQW
-        hQAAAAtzc2gtZWQyNTUxOQAAACA0fSG4tJgE4wssdRGIOfeKBZGNK4IbYKPqZxRzrwHMpg
-        0BAgM=
-        -----END OPENSSH PRIVATE KEY-----
+      GIT_SSH_PRIVATE_KEY: LS0tLS1CRUdJTiBPUEVOU1NIIFBSSVZBVEUgS0VZLS0tLQpiM0JsYm5OemFDMXJaWGt0ZGpFQUFBQUFCRzV2Ym1VQUFBQUVibTl1WlFBQUFBQUFBQUFCQUFBQU13QUFBQXR6YzJndFpXClF5TlRVeE9RQUFBQ0EwZlNHNHRKZ0U0d3NzZFJHSU9mZUtCWkdOSzRJYllLUHFaeFJ6cndITXBnQUFBS2k1WkJhRnVXUVcKaFFBQUFBdHpjMmd0WldReU5UVXhPUUFBQUNBMGZTRzR0SmdFNHdzc2RSR0lPZmVLQlpTks0SWJZS1BxWnhSenJ3SE1wZwowQkFnTT0KLS0tLS1FTkQgT1BFTlNTSCBQUklWQVRFIEtFWS0tLS0tCg==
       ADDONS_GIT_REPOS: "git@github.com:Mint-System/Odoo-Apps-Server-Tools.git#16.0,git@github.com:OCA/server-tools.git#16.0"
       ODOO_ADDONS_PATH: /mnt/addons/,/mnt/oca/,/mnt/enterprise,/mnt/themes/
-      ODOO_DATABASE: 16.0
-      ODOO_INIT: True
+      ODOO_DATABASE: "16.0"
+      ODOO_INIT: "True"
       ODOO_INIT_LANG: de_CH
       ODOO_INIT_ADDONS: server_environment_ir_config_parameter
       ENVIRONMENT: production
       PYTHON_INSTALL: prometheus-client
       SERVER_WIDE_MODULES: session_db,module_change_auto_install
       SESSION_DB_URI: postgres://odoo:odoo@db/16.0
-      PROXY_MODE: True
+      PROXY_MODE: "True"
       LOG_LEVEL: debug
       LIST_DB: False
       ADMIN_PASSWD: *****
@@ -72,7 +72,7 @@ services:
       LIMIT_TIME_CPU: 300
       LIMIT_TIME_REAL: 600
       MODULE_AUTO_INSTALL_DISABLED: odoo_test_xmlrunner
-      CLICK_ODOO_UPDATE: True
+      CLICK_ODOO_UPDATE: "True"
     ports:
       - "127.0.0.1:8069:8069"
     volumes:
@@ -131,7 +131,7 @@ Load mail server configuration from environment vars.
 The entrypoint script can clone git repositories.
 
 * `GIT_SSH_PUBLIC_KEY` Public key for SSH connection.
-* `GIT_SSH_PRIVATE_KEY` Private key for SSH connection.
+* `GIT_SSH_PRIVATE_KEY` Base64 encoded private key for SSH connection.
 * `ADDONS_GIT_REPOS` Comma seperated list of git clone urls appended with `#` and branch name.
 
 ### Addons Path
@@ -200,7 +200,7 @@ With the [Manifestoo](https://github.com/acsone/manifestoo) cli you can query th
 List all modules:
 
 ```bash
-docker exec odoo manifestoo --select-found list
+$CONTAINER_ENGINE exec odoo manifestoo --select-found list
 ```
 
 ### click-odoo
@@ -212,7 +212,7 @@ With [click-odoo](https://github.com/acsone/click-odoo) you can manage the Odoo 
 Update all modules manually:
 
 ```bash
-docker exec odoo bash -c "click-odoo-update \$(grep addons_path /etc/odoo/odoo.conf | sed 's/addons_path = /--addons-path=/') -d odoo
+$CONTAINER_ENGINE exec odoo bash -c "click-odoo-update \$(grep addons_path /etc/odoo/odoo.conf | sed 's/addons_path = /--addons-path=/') -d odoo
 ```
 
 ## Build
@@ -251,27 +251,4 @@ COPY ./odoo.conf.template /etc/odoo/
 
 ## Develop
 
-See [Odoo Build > Build and publish Odoo image](https://odoo.build/#build-and-publish-odoo-image) for details.
-
-## Troubleshooting
-
-### Session folder not writable
-
-**Problem**
-
-When starting the container the following error shows up:
-
-```
-/var/lib/odoo/sessions: directory is not writable
-```
-
-**Cause**
-
-The Odoo user/group have a different uid/gid.
-
-**Solution**
-
-```bash
-docker exec -u root -it $CONTAINER bash
-chown -R odoo:odoo /var/lib/odoo
-```
+See [Odoo Build > Build and publish container image](https://odoo.build/#build-and-publish-odoo-image) for details.

@@ -3,13 +3,15 @@
 if [ -n "$ADDONS_GIT_REPOS" ]; then
     
     # Setup git ssh key
-    mkdir -p ~/.ssh
     if [ -n "$GIT_SSH_PRIVATE_KEY" ]; then
         entrypoint-log "Setup SSH key from env vars."
-        echo "$GIT_SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
+        mkdir -p ~/.ssh
+        chmod 700 ~/.ssh
+        DECODED_GIT_SSH_PRIVATE_KEY=$(echo -e "$GIT_SSH_PRIVATE_KEY" | base64 -d)
+        echo "$DECODED_GIT_SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
         chmod 600 ~/.ssh/id_ed25519
         eval "$(ssh-agent -s)"
-        ssh-add ~/.ssh/id_ed25519
+        ssh-add ~/.ssh/id_ed25519 || (entrypoint-log "Dumping ~/.ssh/id_ed25519 content:" && cat ~/.ssh/id_ed25519)
     fi
 
     # Clone git repo addons into /var/lib/odoo/git
@@ -57,4 +59,6 @@ if [ -n "$ADDONS_GIT_REPOS" ]; then
         ssh-add -d ~/.ssh/id_ed25519
         rm ~/.ssh/id_ed25519
     fi
+
+    export ODOO_ADDONS_PATH
 fi
