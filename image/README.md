@@ -26,6 +26,8 @@ Source: <https://github.com/Mint-System/Odoo-Build/tree/16.0/image/>
 
 ## Usage
 
+The following is a `docker-compose.yml` file with an Odoo and Postgres service:
+
 ```yml
 services:
   odoo:
@@ -55,7 +57,6 @@ services:
       ADDONS_GIT_REPOS: "git@github.com:Mint-System/Odoo-Apps-Server-Tools.git#16.0,git@github.com:OCA/server-tools.git#16.0"
       ODOO_ADDONS_PATH: /mnt/addons/,/mnt/oca/,/mnt/enterprise,/mnt/themes/
       ODOO_DATABASE: "16.0"
-      ODOO_INIT: "True"
       ODOO_INIT_LANG: de_CH
       ODOO_INIT_ADDONS: server_environment_ir_config_parameter
       ENVIRONMENT: production
@@ -95,6 +96,67 @@ volumes:
   db-data:
 ```
 
+Details of the most important Odoo image paths:
+
+* `/etc/odoo` Contains the `odoo.conf` and `odoo.conf.template` files.
+* `/var/lib/odoo/filestore` For every database name Odoo create a filestore.
+* `/var/lib/odoo/git` The cloned module repos are stored here.
+* `/opt/odoo-venv` This is where Python packages are installed.
+* `/mnt/extra-addons` Module folders are loaded from this path by default.
+
+### Initialize
+
+Before starting the container you can initialisation scripts. These scripts have external dependencies or are executed once.
+
+Run the `git-clone-addons` script to clone module repos:
+
+```bash
+docker-compose run --rm odoo git-clone-addons
+```
+
+And run the `init-db` script to initalize the Odoo database:
+
+```bash
+docker-compose run --rm odoo init-db
+```
+
+The scripts are configured with environment variables.
+
+### Start
+
+Once you start the image the `entrypoint.sh` script will:
+
+* Run the `set-addons-path` script to assemble the addons path.
+* Apply default values to env vars.
+* Run the `auto-envsubst` script to template the `odoo.conf` file.
+* Run the `python-install` script to install the Python packages.
+* Wait for the database to be ready.
+* Run the `setup-mail` script to update the mail configuration in the database.
+* Run the `odoo-update` script to update modules.
+* Run Odoo server.
+
+### Run
+
+Once the container is running you can update modules with this command: 
+
+```bash
+$CONTAINER_ENGINE exec odoo bash -c "click-odoo-update \$(grep addons_path /etc/odoo/odoo.conf | sed 's/addons_path = /--addons-path=/') -d odoo
+```
+
+### Analyze
+
+With the [Manifestoo](https://github.com/acsone/manifestoo) cli you can query the module manifest files.
+
+List all modules:
+
+```bash
+$CONTAINER_ENGINE exec odoo manifestoo --select-found list
+```
+
+## Environment
+
+The container can be configured with environment variables. This section shows all the variables.
+
 ### Database Connection
 
 Odoo supports PostgreSQL database only.
@@ -106,7 +168,7 @@ Odoo supports PostgreSQL database only.
 
 ### System Parameters
 
-Define Odoo system parameters. Requires `server_environment_ir_config_parameter` to be in `ODOO_INIT_ADDONS`.
+Define Odoo system parameters. Requires `server_environment_ir_config_parameter` in `ODOO_INIT_ADDONS`.
 
 * `MAIL_CATCHALL_ALIAS`: Name of the catchall mail adress. Default is `catchall`.
 * `MAIL_CATCHALL_DOMAIN`: Domain name of of the catchall mail addres
@@ -114,7 +176,7 @@ Define Odoo system parameters. Requires `server_environment_ir_config_parameter`
 
 ### Incoming and Outgoing Mail-Server
 
-Load mail server configuration from environment vars.
+Define the mail configuration with these env vars:
 
 * `ODOO_MAIL_SMTP_HOST`: If set Odoo sends mails to this host.
 * `ODOO_MAIL_SMTP_PORT`: SMTP port. Default is `587`.
@@ -128,7 +190,7 @@ Load mail server configuration from environment vars.
 
 ### Module Repos
 
-The entrypoint script can clone git repositories.
+The image can clone git repositories.
 
 * `GIT_SSH_PUBLIC_KEY` Public key for SSH connection.
 * `GIT_SSH_PRIVATE_KEY` Base64 encoded private key for SSH connection.
@@ -142,16 +204,15 @@ The entrypoint script searches for module folders in the addons path and creates
 
 ### Initialize
 
-If enabled the entrypoint script initializes the Odoo database.
+Set these environment variables for database init:
 
 * `ODOO_DATABASE` Name of the Odoo database. No default is set.
-* `ODOO_INIT` Enable to initalise the database. Default is `False`.
-* `ODOO_INIT_LANG` Language used for database initialisation. Default is `en_US`.
-* `ODOO_INIT_ADDONS` Provide comma separated list of modules for database initialisation. Default is `web`.
+* `ODOO_INIT_LANG` Language used for database init. Default is `en_US`.
+* `ODOO_INIT_ADDONS` Provide comma separated list of modules for database init. Default is `web`.
 
 ### Server Environment
 
-The Odoo server can be configured using the following env vars.
+The Odoo server can be configured using these env vars.
 
 * `ENVIRONMENT` Provide an environment name. Can be accessed with `config.get("environment")`.
 * `PYTHON_INSTALL` Comma seperated list of python packages.
@@ -177,43 +238,17 @@ Odoo is a multi-threaded Python process.
 * `LIMIT_TIME_CPU` Maximum cpu time per request. Default is `60`.
 * `LIMIT_TIME_REAL` Maximum real time per request. Default is `120`.
 
-### Container Paths
-
-Here are the most important container paths.
-
-* `/etc/odoo` Contains the `odoo.conf` and `odoo.conf.template` files.
-* `/var/lib/odoo/filestore` For every database name Odoo create a filestore.
-* `/var/lib/odoo/git` The cloned module repos are stored here.
-* `/opt/odoo-venv` This is where Python packages are installed.
-* `/mnt/extra-addons` Module folders are loaded from this path by default.
-
 ### Disable Auto Install
 
 With `module_change_auto_install` module you can disable the auto installation of specific modules.
 
 * `MODULE_AUTO_INSTALL_DISABLED` Comma separated list of modules that should be auto installed. Requires `module_change_auto_install` in `SERVER_WIDE_MODULES`.
 
-### Mainfestoo
+### Module Update
 
-With the [Manifestoo](https://github.com/acsone/manifestoo) cli you can query the module manifest files.
-
-List all modules:
-
-```bash
-$CONTAINER_ENGINE exec odoo manifestoo --select-found list
-```
-
-### click-odoo
-
-With [click-odoo](https://github.com/acsone/click-odoo) you can manage the Odoo database.
+The container uses [click-odoo](https://github.com/acsone/click-odoo) to update Odoo modules. The feature is disabled by default.
 
 * `CLICK_ODOO_UPDATE` If enabled click-odoo is used to update modules that have changed. Requires `ODOO_DATABASE` and `ODOO_ADDONS_PATH`. Default is `False`.
-
-Update all modules manually:
-
-```bash
-$CONTAINER_ENGINE exec odoo bash -c "click-odoo-update \$(grep addons_path /etc/odoo/odoo.conf | sed 's/addons_path = /--addons-path=/') -d odoo
-```
 
 ## Build
 
