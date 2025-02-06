@@ -84,12 +84,13 @@ function help-table() {
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "list-modules" "[path]" "Get modules in path as list."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "list-env" "" "List env files."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "list-revision" "" "List available Odoo revisions."
-    printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "llm-update" "[path]" "Feed module files with prompt to LLM and apply updates with git path."
+    printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "llm-update" "[path][prompt]" "Feed module files with prompt to LLM and apply file changes."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "logs" "" "Tail Odoo container logs."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "node-install" "" "Install build dependencies."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "node-dev" "" "Start vuepress development server."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "node-build" "" "Create vuepress build."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "node-serve-build" "" "Serve vuepress build."
+    printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "odooctl" "" "Execute odooctl cli."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "odoo-cloc" "[db]" "Count custom line of codes. Default is branch name."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "pass-store-dotenv" "" "Store content of .env in pass entry."
     printf "| %-${cmd_width}s | %-${opt_width}s | %-${desc_width}s |\n" "pass-restore-dotenv" "" "Restore content of .env from pass entry."
@@ -162,6 +163,7 @@ ODOO_DATABASE=${ODOO_DATABASE:="$GIT_BRANCH"}
 ODOO_REVISION=${ODOO_REVISION:="$GIT_BRANCH"}
 ODOO_LANGUAGE=${ODOO_LANGUAGE:="de_CH"}
 ODOO_PORT=${ODOO_PORT:="8069"}
+POSTGRES_IMAGE=${POSTGRES_IMAGE:="postgres:14-alpine"}
 POSTGRES_PORT=${POSTGRES_PORT:="5432"}
 LOG_LEVEL=${LOG_LEVEL:="info"}
 CONTAINER_REGISTRY=${CONTAINER_REGISTRY:="mintsystem/"}
@@ -281,7 +283,7 @@ function template-odoo-rc() {
 function set-addons-path() {
 
     # Read addons path from git submodules
-    SUBMODULES_PATH="$(git config --file .gitmodules --get-regexp path | awk '{ print $2 }' | tr '\n' ',' |  sed 's/,*$//g')"
+    SUBMODULES_PATH="$(git config --file .gitmodules --get-regexp path | awk '{ print $2 }' |sort |  tr '\n' ',' |  sed 's/,*$//g')"
 
     # Remove excluded addons
     EXCLUDES="addons/theme_mint_system addons/company addons/web"
@@ -298,7 +300,7 @@ function set-addons-path() {
     done
 
     # Convert to native paths
-    ADDONS_PATH="$(echo $SUBMODULES_PATH | sed 's|odoo,|odoo/addons,|g')"
+    ADDONS_PATH="$(echo $SUBMODULES_PATH | sed 's|,odoo|,odoo/addons|g')"
 
     # Append paths from config env var
     if [ -n "$ODOO_ADDONS_PATH" ]; then
@@ -572,10 +574,12 @@ function list-modules() {
 function template-docker-compose() {
     echo "Template docker-compose.yml"
 
+    # Extract variables and export them
+    # grep -oP '\$\{([^}]+)\}' docker-compose.yml.template | sed 's/${\([^}]\+\)}/export \1/'
     export CONTAINER_REGISTRY
     export CONTAINER_TAG
     export POSTGRES_PORT
-    export ODOO_PORT
+    export POSTGRES_PORT
     export MAIL_DEFAULT_FROM
     export MAIL_CATCHALL_DOMAIN
     export MAIL_CATCHALL_ALIAS
@@ -590,9 +594,12 @@ function template-docker-compose() {
     export ODOO_MAIL_PASSWORD
     export GIT_SSH_PUBLIC_KEY
     export GIT_SSH_PRIVATE_KEY
+    export GITHUB_USERNAME
+    export GITHUB_PERSONAL_ACCESS_TOKEN
     export ADDONS_GIT_REPOS
     export ODOO_ADDONS_PATH
     export ODOO_DATABASE
+    export ODOO_INIT
     export ODOO_INIT_LANG
     export ODOO_INIT_ADDONS
     export ENVIRONMENT
@@ -610,9 +617,12 @@ function template-docker-compose() {
     export LIMIT_TIME_REAL
     export MODULE_AUTO_INSTALL_DISABLED
     export CLICK_ODOO_UPDATE
-    export PGADMIN_DEFAULT_EMAIL
-    export PGADMIN_DEFAULT_PASSWORD
+    export ODOO_PORT
+    export ODOO_PORT
     export POSTGRES_IMAGE
+    export POSTGRES_PORT
+    export POSTGRES_PORT
+    export ODOO_DATABASE
 
     envsubst < "docker-compose.yml.template" > "docker-compose.yml"
 }
@@ -953,6 +963,7 @@ function test-container() {
         remove-env test
         git -C oca/partner-contact checkout .
     else
+        activate-venv
         version
         info
         set -e
@@ -967,20 +978,23 @@ function test-container() {
             GIT_SSH_PUBLIC_KEY=$(cat tmp/ed25519.pub)
         fi
         
-        echo "TEST: Clone submodule"
-        git submodule update --init oca/partner-contact
+        echo -e "\033[38;5;214mTEST\033[0m: Clone submodule with https"
+        # if [ ! -d "oca/partner-contact" ]; then
+        (git clone -b "$GIT_BRANCH" https://github.com/OCA/partner-contact.git oca/partner-contact) || true
+        ls -lsh oca/partner-contact
+        # fi
 
-        echo "TEST: Start container environment."
+        echo -e "\033[38;5;214mTEST\033[0m: Start container environment."
         export BROWSER_OPEN=false
         start db,mail
 
-        echo "TEST: Clone Odoo addons."
+        echo -e "\033[38;5;214mTEST\033[0m: Clone Odoo addons."
         export GIT_SSH_PRIVATE_KEY
         export GIT_SSH_PUBLIC_KEY
         export ADDONS_GIT_REPOS="https://github.com/OCA/server-env.git#${GIT_BRANCH},https://github.com/OCA/server-tools.git#${GIT_BRANCH},https://github.com/Mint-System/Odoo-Apps-Server-Tools.git#${GIT_BRANCH},https://github.com/Mint-System/Odoo-Apps-Connector.git#${GIT_BRANCH}"
         run odoo git-clone-addons
 
-        echo "TEST: Init Odoo database."
+        echo -e "\033[38;5;214mTEST\033[0m: Init Odoo database."
         export ODOO_ADDONS_PATH="/mnt/enterprise,/mnt/oca"
         export ODOO_DATABASE=test
         export ODOO_INIT_LANG=de_CH
@@ -988,7 +1002,7 @@ function test-container() {
         export PYTHON_INSTALL=prometheus-client,manifestoo
         run odoo init-db
 
-        echo "TEST: Start Odoo container."
+        echo -e "\033[38;5;214mTEST\033[0m: Start Odoo container."
         export ODOO_MAIL_SMTP_HOST=mail
         export ODOO_MAIL_SMTP_PORT=1025
         export ODOO_MAIL_SMTP_ENCRYPTION=none
@@ -999,16 +1013,16 @@ function test-container() {
         export MAIL_DEFAULT_FROM="test"
         export BROWSER_OPEN=false
         start odoo
-        while ! curl --fail -s http://localhost:8069; do sleep 1; done
-        
-        echo "TEST: Run auto update."
+        until curl --silent --fail "http://localhost:8069/web/login" &> /dev/null; do
+            echo "Waiting for Odoo to be ready ..."
+            sleep 3
+            docker logs odoo --tail 100
+        done
+
+        echo -e "\033[38;5;214mTEST\033[0m: Init oca module."
         docker-odoo-init -d test -i partner_firstname
-        sed -i -E 's/(firstname = fields)/secondname = fields.Char();\1/' oca/partner-contact/partner_firstname/models/res_partner.py
-        restart odoo
-        while ! curl --fail -s http://localhost:8069; do sleep 1; done
-        bin/odooctl --method "search_one" --model "ir.model.fields" --domain "[('name', '=', 'secondname')]"
-        
-        echo "TEST: Setup and check RPC credentials."
+
+        echo -e "\033[38;5;214mTEST\033[0m: Setup and check RPC credentials."
         export ODOO_URL="http://localhost:8069"
         export ODOO_USERNAME=admin
         export ODOO_PASSWORD=admin
@@ -1016,25 +1030,34 @@ function test-container() {
         show-env test
         test-xmlrpc test
 
-        echo "TEST: Send mail with message post."
-        bin/odooctl --method "create" --model "res.partner" --value "{'name': 'User', 'email': 'user@example.com'}"
-        docker-odoo-shell -d test -f -p "env['res.partner'].browse(3)._message_subscribe([7])"
-        docker-odoo-shell -d test -f -p "env['res.partner'].browse(3).message_post(body='ping', subtype_id=1)"
-        TO_ADDRESS=$(curl -X GET "http://localhost:8025/api/v1/messages?limit=1" \
-            -H 'accept: application/json' | jq ".messages[0].To[0].Address")
-        [ "$TO_ADDRESS" = '"user@example.com"' ]
-
-        echo "TEST: Install, update, disable and remove snippet."
+        echo -e "\033[38;5;214mTEST\033[0m: Install, update, disable and remove snippet."
         install-snippet test snippets/base.view_partner_form.show_type.xml
         update-snippet test snippets/base.view_partner_form.show_type.xml
         disable-snippet test snippets/base.view_partner_form.show_type.xml
         remove-snippet test snippets/base.view_partner_form.show_type.xml
 
-        echo "TEST: Run Odoo scripts."
+        echo -e "\033[38;5;214mTEST\033[0m: Run Odoo scripts."
         docker-odoo-backup -d test
         docker-odoo-drop -d test
         docker-odoo-restore -d test -f /var/tmp/test.zip
         change-uuid test
+
+        # echo -e "\033[38;5;214mTEST\033[0m: Send mail with message post."
+        # bin/odooctl --method "create" --model "res.partner" --value "{'name': 'User', 'email': 'user@example.com'}"
+        # docker-odoo-shell -d test -f -p "env['res.partner'].browse(3)._message_subscribe([7])"
+        # docker-odoo-shell -d test -f -p "env['res.partner'].browse(3).message_post(body='ping', subtype_id=1)"
+        # TO_ADDRESS=$(curl -X GET "http://localhost:8025/api/v1/messages?limit=1" \
+        #     -H 'accept: application/json' | jq ".messages[0].To[0].Address")
+        # [ "$TO_ADDRESS" = '"user@example.com"' ]
+
+        # echo -e "\033[38;5;214mTEST\033[0m: Run auto update."
+        # sed -i -E 's/(firstname = fields)/secondname = fields.Char();\1/' oca/partner-contact/partner_firstname/models/res_partner.py
+        # restart odoo
+        # until curl --silent --fail "http://localhost:8069/web/login" &> /dev/null; do
+        #     echo "Waiting for Odoo to be ready ..."
+        #     sleep 3
+        # done
+        # bin/odooctl --method "search_one" --model "ir.model.fields" --domain "[('name', '=', 'secondname')]"
     fi
 }
 
@@ -2269,6 +2292,10 @@ function test-xmlrpc() {
     echo "Connect to database and count res.partner records: $(bin/odooctl --model "res.partner" --method "search_count" --domain '[]')"
 }
 
+function odooctl(){
+    bin/odooctl "$@"
+}
+
 # Pass Commands
 
 function pass-store-dotenv() {
@@ -2297,23 +2324,27 @@ function llm-update() {
         exit 1; 
     fi
 
-    # Get list of files
+    # Get files from path
     FILES=$(find "$1" -type f \( -name "*.py" -o -name "*.xml" \))
-
     echo -e "Loaded these files into prompt:\n\n$FILES\n"
 
-    # Get task description
-    read -p "Enter the task description: " TASK_DESCRIPTION
+    # Prompt task description
+    if [ -z "$2" ]; then
+        read -p "Enter the task description: " TASK_DESCRIPTION
+    else
+        TASK_DESCRIPTION="$2"
+    fi
 
     # Prepare the files content for prompt
     FILE_CONTENTS=""
     for FILE in $FILES; do
-        FILE_CONTENTS+="<<< $FILE >>>
+        FILE_CONTENTS+="<<<$FILE>>>
 $(cat "$FILE")
 
 "
     done
 
+    # Define prompt content
     PROMPT_FILE="tmp/llm_update"
     echo -e "\nWrite prompt to $PROMPT_FILE."
     cat << EOF > "$PROMPT_FILE"
@@ -2321,20 +2352,20 @@ Look at the code files below and do the following:
 
 $TASK_DESCRIPTION
 
-Output the updated content for each file in the following format:
-<<< filename >>>
-<updated content>
+Output all files that you need to change in full again, including your changes. 
+In the same format as I provide the files below. Under no circumstances output any other text, 
+no additional infos, no code formatting chars. Only the code in the given format.
 
 Here are the files:
 
 $FILE_CONTENTS
 EOF
 
-    # Run the llm command with the prompt
+    # Run the llm command
     echo -e "Send prompt and wait for the response of the $LLM_MODEL LLM."
     RESULT=$(cat "$PROMPT_FILE" | llm -m "$LLM_MODEL")
 
-    # Check if the result is empty
+    # Check if result is empty
     if [ -z "$RESULT" ]; then
         echo "No response from the model. Exiting."
         exit 1
@@ -2345,13 +2376,12 @@ EOF
     echo "$RESULT" > "$RESULT_FILE"
     echo -e "Saved response to $RESULT_FILE.\n"
 
-    # Show a preview of the response file
+    # Show a preview of result file
     less "$RESULT_FILE"
 
     # Ask for confirmation before updating files
     read -p "Do you want to apply these updates to the files? (y/n): " CONFIRM
     if [[ ! "$CONFIRM" =~ ^[Yy]$ ]]; then
-        echo "Aborted file updates."
         exit 0
     fi
 
@@ -2359,16 +2389,14 @@ EOF
     echo -e "Parsing the response and updating files...\n"
     CURRENT_FILE=""
     while IFS= read -r LINE; do
-        if [[ $LINE =~ "^<<<" ]]; then
+        if [[ $LINE =~ ^"<<<"(.*)">>>" ]]; then
             CURRENT_FILE="${BASH_REMATCH[1]}"
-            echo "Processing updates for $CURRENT_FILE..."
+            echo "Update file $CURRENT_FILE."
             > "$CURRENT_FILE"
         elif [[ -n $CURRENT_FILE ]]; then
             echo "$LINE" >> "$CURRENT_FILE"
         fi
     done < "$RESULT_FILE"
-
-    echo -e "\nAll files have been updated."
 }
 
 if declare -f "$1" > /dev/null; then
